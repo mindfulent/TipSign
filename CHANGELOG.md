@@ -2,6 +2,17 @@
 
 All notable changes to TipSign will be documented in this file.
 
+## [0.8.0] - 2026-03-14
+
+### Added
+- DiscoveryManager — bridges block entity events to snapshot writes and webhook pushes
+- DebounceTimer — 5-second debounce window for rapid edits
+- Background interval timer (ScheduledExecutorService) for periodic snapshots
+- Server ID auto-generation (UUID in tipsign.toml)
+- Wired SnapshotWriter + WebhookDispatcher to live block entity data
+- Graceful executor shutdown on server stop
+- Sign tracking registry for efficient snapshot collection
+
 ## [0.7.0] - 2026-03-14
 
 ### Added

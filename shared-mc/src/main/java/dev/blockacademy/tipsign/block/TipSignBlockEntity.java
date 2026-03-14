@@ -3,6 +3,7 @@ package dev.blockacademy.tipsign.block;
 import dev.blockacademy.tipsign.TipSignMod;
 import dev.blockacademy.tipsign.common.TipSignData;
 import dev.blockacademy.tipsign.compat.VersionAdapter;
+import dev.blockacademy.tipsign.discovery.DiscoveryManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -31,6 +32,10 @@ public class TipSignBlockEntity extends BlockEntity {
     public void setData(TipSignData data) {
         this.data = data;
         setChanged();
+        if (this.level != null && !this.level.isClientSide()) {
+            DiscoveryManager.get().trackSign(this.getBlockPos(), data);
+            DiscoveryManager.get().onSignChanged();
+        }
     }
 
     // --- Serialization (delegates to VersionAdapter) ---

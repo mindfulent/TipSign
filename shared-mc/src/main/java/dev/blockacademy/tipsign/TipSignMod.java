@@ -4,7 +4,9 @@ import dev.blockacademy.tipsign.block.TipSignBlock;
 import dev.blockacademy.tipsign.block.TipSignBlockEntity;
 import dev.blockacademy.tipsign.common.TipSignConfig;
 import dev.blockacademy.tipsign.compat.VersionAdapter;
+import dev.blockacademy.tipsign.discovery.DiscoveryManager;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -71,6 +73,14 @@ public class TipSignMod implements ModInitializer {
 
         // Load config
         TipSignConfig.load(net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir());
+
+        // Server lifecycle events for discovery API
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            DiscoveryManager.get().init(server, server.getServerDirectory().resolve("config"));
+        });
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            DiscoveryManager.get().shutdown();
+        });
 
         LOGGER.info("TipSign loaded");
     }
