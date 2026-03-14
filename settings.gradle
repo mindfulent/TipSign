@@ -1,0 +1,13 @@
+pluginManagement {
+    repositories {
+        maven { url "https://maven.fabricmc.net/" }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "tipsign"
+
+include "common"
+include "shared-mc"
+include "versions:1.21"

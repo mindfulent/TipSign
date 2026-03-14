@@ -1,0 +1,12 @@
+plugins {
+    id "java-library"
+}
+
+dependencies {
+    // NightConfig for TOML config parsing
+    api "com.electronwill.night-config:toml:${project.nightconfig_version}"
+    api "com.electronwill.night-config:core:${project.nightconfig_version}"
+
+    // Gson for JSON snapshot serialization
+    api "com.google.code.gson:gson:${project.gson_version}"
+}

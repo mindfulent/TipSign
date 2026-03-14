@@ -1,0 +1,35 @@
+plugins {
+    id "fabric-loom"
+}
+
+version = ""
+
+base {
+    archivesName = "${rootProject.archives_base_name}-${rootProject.mod_version}+mc${project.minecraft_version}"
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    implementation project(":common")
+    implementation project(path: ":shared-mc", configuration: "namedElements")
+
+    // Bundle common as jar-in-jar
+    include project(":common")
+}
+
+// Include shared-mc classes directly in the version JAR
+jar {
+    from(project(":shared-mc").sourceSets.main.output)
+}
+
+processResources {
+    inputs.property "version", project.mod_version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.mod_version
+    }
+}
