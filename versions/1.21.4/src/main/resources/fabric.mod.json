@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "tipsign",
+  "version": "${version}",
+  "name": "TipSign",
+  "description": "Configurable sign-post block with long-form text, supporter links, and discovery API.",
+  "authors": ["Slash"],
+  "contact": {},
+  "license": "All Rights Reserved",
+  "icon": "assets/tipsign/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.blockacademy.tipsign.TipSignMod"],
+    "client": ["dev.blockacademy.tipsign.TipSignModClient"]
+  },
+  "mixins": ["tipsign.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.15.11",
+    "minecraft": ">=1.21.4 <1.21.6",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

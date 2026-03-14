@@ -2,6 +2,31 @@
 
 All notable changes to TipSign will be documented in this file.
 
+## [0.11.0] - 2026-03-14
+
+### Fixed
+- Band B: ResourceLocation.fromNamespaceAndPath() → new ResourceLocation() (1.20.5 API)
+- Shared-mc: Use VersionAdapter.createId() instead of direct ResourceLocation factory
+- Shared-mc: Use FabricLoader.getConfigDir() for discovery init (works across all MC versions)
+- Shared-mc: DirectionProperty → EnumProperty<Direction> (removed in 1.21.2)
+- Shared-mc: BlockEntityType.Builder → FabricBlockEntityTypeBuilder (removed in 1.21.2)
+- Bands F and G excluded from build — require Fabric Loom 1.10+ (stub subprojects remain)
+
+### Changed
+- buildAll now produces 5 JARs (Bands A–E); Bands F/G deferred until Loom upgrade
+- Build requires `--no-parallel` or `GRADLE_OPTS="-Xmx4g"` to avoid OOM on remapSourcesJar
+
+## [0.10.0] - 2026-03-14
+
+### Added
+- Band B (MC 1.20.5–1.20.6) version subproject with DataComponentType, CustomPayload networking
+- Band D (MC 1.21.2–1.21.3) version subproject with unified ActionResult support
+- Band E (MC 1.21.4–1.21.5) version subproject with item model definition file
+- Band F (MC 1.21.6–1.21.8) version subproject (stub — needs ValueOutput/ValueInput adaptation)
+- Band G (MC 1.21.9–1.21.11) version subproject (stub — needs ValueOutput/ValueInput + queue-based BER)
+- Item model definition (`assets/tipsign/items/sign_post.json`) for Bands E, F, G (1.21.4+)
+- All 7 version bands now included in settings.gradle and buildAll task
+
 ## [0.9.0] - 2026-03-14
 
 ### Changed

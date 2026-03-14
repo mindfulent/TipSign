@@ -16,6 +16,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
@@ -48,7 +49,7 @@ public class TipSignMod implements ModInitializer {
         // Register data components (must be before block/item registration)
         VersionAdapter.INSTANCE.registerComponents();
 
-        ResourceLocation blockId = ResourceLocation.fromNamespaceAndPath(MOD_ID, "sign_post");
+        ResourceLocation blockId = VersionAdapter.INSTANCE.createId(MOD_ID, "sign_post");
 
         // Register block
         Registry.register(BuiltInRegistries.BLOCK, blockId, SIGN_POST_BLOCK);
@@ -60,7 +61,7 @@ public class TipSignMod implements ModInitializer {
         SIGN_POST_BLOCK_ENTITY = Registry.register(
             BuiltInRegistries.BLOCK_ENTITY_TYPE,
             blockId,
-            BlockEntityType.Builder.of(TipSignBlockEntity::new, SIGN_POST_BLOCK).build(null)
+            FabricBlockEntityTypeBuilder.create(TipSignBlockEntity::new, SIGN_POST_BLOCK).build()
         );
 
         // Add to creative tab
@@ -76,7 +77,7 @@ public class TipSignMod implements ModInitializer {
 
         // Server lifecycle events for discovery API
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-            DiscoveryManager.get().init(server, server.getServerDirectory().resolve("config"));
+            DiscoveryManager.get().init(server, net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir());
         });
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             DiscoveryManager.get().shutdown();

@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -34,7 +34,7 @@ import org.jetbrains.annotations.Nullable;
 public class TipSignBlock extends BaseEntityBlock {
 
     public static final MapCodec<TipSignBlock> CODEC = simpleCodec(TipSignBlock::new);
-    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     // Collision shape: post (7-9) + board (1-15 at y7-14)
     private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 16, 15);

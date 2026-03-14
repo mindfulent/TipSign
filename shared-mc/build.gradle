@@ -2,6 +2,10 @@ plugins {
     id "fabric-loom"
 }
 
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:1.21"
     mappings loom.officialMojangMappings()

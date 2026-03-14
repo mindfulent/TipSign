@@ -22,7 +22,17 @@ subprojects {
 
     tasks.withType(JavaCompile).configureEach {
         it.options.encoding = "UTF-8"
-        it.options.release = 21
+    }
+}
+
+// Common module must target Java 17 for Band A compatibility
+project(":common") {
+    tasks.withType(JavaCompile).configureEach {
+        it.options.release = 17
+    }
+    java {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
@@ -30,5 +40,12 @@ subprojects {
 tasks.register("buildAll") {
     group = "build"
     description = "Builds all version band JARs"
-    dependsOn ":versions:1.21:build"
+    dependsOn ":versions:1.20.1:build"   // Band A: MC 1.20.1–1.20.4
+    dependsOn ":versions:1.20.5:build"   // Band B: MC 1.20.5–1.20.6
+    dependsOn ":versions:1.21:build"     // Band C: MC 1.21–1.21.1
+    dependsOn ":versions:1.21.2:build"   // Band D: MC 1.21.2–1.21.3
+    dependsOn ":versions:1.21.4:build"   // Band E: MC 1.21.4–1.21.5
+    // Band F (1.21.6) and G (1.21.9) excluded — require Loom 1.10+ and adapted shared classes
+    // dependsOn ":versions:1.21.6:build"   // Band F: MC 1.21.6–1.21.8
+    // dependsOn ":versions:1.21.9:build"   // Band G: MC 1.21.9–1.21.11
 }
