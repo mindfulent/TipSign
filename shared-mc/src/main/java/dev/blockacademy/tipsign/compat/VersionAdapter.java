@@ -27,6 +27,10 @@ public interface VersionAdapter {
     void registerServerPlayReceivers();
     void sendOpenSignToClient(ServerPlayer player, BlockPos pos, TipSignData data, boolean authorMode);
 
+    // --- Client-side networking ---
+    void registerClientPlayReceivers();
+    void sendUpdateToServer(BlockPos pos, TipSignData data);
+
     // --- Identifier Construction ---
     ResourceLocation createId(String namespace, String path);
 

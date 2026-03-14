@@ -2,6 +2,17 @@
 
 All notable changes to TipSign will be documented in this file.
 
+## [0.5.0] - 2026-03-14
+
+### Added
+- Custom networking: OpenSignPayload (S2C) and UpdateSignPayload (C2S)
+- TipSignReaderScreen — minimal reader with page navigation and close button
+- TipSignAuthorScreen — minimal editor with title field, body field, page nav, save/cancel
+- TipSignDataCodec — JSON serializer for networking payloads
+- Client packet receiver opens appropriate screen based on authorMode flag
+- Server packet receiver validates ownership before applying updates
+- Right-click opens Reader, shift+right-click by owner opens Author
+
 ## [0.4.0] - 2026-03-14
 
 ### Added

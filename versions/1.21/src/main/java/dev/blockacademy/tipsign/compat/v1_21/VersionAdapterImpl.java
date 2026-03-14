@@ -1,16 +1,27 @@
 package dev.blockacademy.tipsign.compat.v1_21;
 
+import dev.blockacademy.tipsign.TipSignMod;
 import dev.blockacademy.tipsign.block.TipSignBlockEntity;
 import dev.blockacademy.tipsign.common.TipSignData;
+import dev.blockacademy.tipsign.common.TipSignDataCodec;
 import dev.blockacademy.tipsign.compat.VersionAdapter;
+import dev.blockacademy.tipsign.compat.v1_21.network.OpenSignPayload;
+import dev.blockacademy.tipsign.compat.v1_21.network.UpdateSignPayload;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -19,7 +30,6 @@ import java.util.UUID;
 
 /**
  * Band C (MC 1.21–1.21.1) version adapter implementation.
- * Uses CompoundTag + HolderLookup.Provider serialization, ResourceLocation.fromNamespaceAndPath().
  */
 public class VersionAdapterImpl implements VersionAdapter {
 
@@ -51,7 +61,7 @@ public class VersionAdapterImpl implements VersionAdapter {
     @Override
     public void loadBlockEntityData(Object blockEntity, Object tagOrInput) {
         if (!(blockEntity instanceof TipSignBlockEntity be) || !(tagOrInput instanceof CompoundTag tag)) return;
-        if (!tag.contains("Id")) return; // No data stored yet
+        if (!tag.contains("Id")) return;
 
         String id = tag.getString("Id");
         String title = tag.getString("Title");
@@ -95,12 +105,79 @@ public class VersionAdapterImpl implements VersionAdapter {
 
     @Override
     public void registerServerPlayReceivers() {
-        // TODO: Phase 4 — register UpdateSignC2S receiver
+        // Register payload types on both sides
+        PayloadTypeRegistry.playS2C().register(OpenSignPayload.TYPE, OpenSignPayload.STREAM_CODEC);
+        PayloadTypeRegistry.playC2S().register(UpdateSignPayload.TYPE, UpdateSignPayload.STREAM_CODEC);
+
+        // Handle C2S: Author UI save
+        ServerPlayNetworking.registerGlobalReceiver(UpdateSignPayload.TYPE, (payload, context) -> {
+            ServerPlayer player = context.player();
+            BlockPos pos = payload.pos();
+
+            context.player().server.execute(() -> {
+                BlockEntity be = player.level().getBlockEntity(pos);
+                if (!(be instanceof TipSignBlockEntity tipSign)) return;
+
+                // Permission check
+                boolean isOwner = player.getUUID().equals(tipSign.getData().ownerUuid());
+                boolean isAdmin = player.hasPermissions(2);
+                if (!isOwner && !isAdmin) {
+                    player.sendSystemMessage(Component.literal("You are not the owner of this Tip Sign."));
+                    return;
+                }
+
+                // Apply update
+                TipSignData updated = TipSignDataCodec.fromJson(payload.jsonData());
+                // Preserve owner info from existing data
+                TipSignData existing = tipSign.getData();
+                TipSignData merged = new TipSignData(
+                    existing.id(),
+                    updated.title(),
+                    updated.pages(),
+                    updated.kofiUrl(),
+                    updated.patreonUrl(),
+                    existing.ownerUuid(),
+                    existing.ownerUsername(),
+                    existing.placedAt(),
+                    Instant.now()
+                );
+                tipSign.setData(merged);
+
+                // Sync to nearby clients
+                player.level().sendBlockUpdated(pos, tipSign.getBlockState(), tipSign.getBlockState(), 3);
+            });
+        });
     }
 
     @Override
     public void sendOpenSignToClient(ServerPlayer player, BlockPos pos, TipSignData data, boolean authorMode) {
-        // TODO: Phase 4 — send OpenSignS2C packet
+        String json = TipSignDataCodec.toJson(data);
+        ServerPlayNetworking.send(player, new OpenSignPayload(pos, authorMode, json));
+    }
+
+    @Override
+    public void registerClientPlayReceivers() {
+        ClientPlayNetworking.registerGlobalReceiver(OpenSignPayload.TYPE, (payload, context) -> {
+            TipSignData data = TipSignDataCodec.fromJson(payload.jsonData());
+            BlockPos pos = payload.pos();
+            boolean authorMode = payload.authorMode();
+
+            context.client().execute(() -> {
+                if (authorMode) {
+                    context.client().setScreen(
+                        new dev.blockacademy.tipsign.screen.TipSignAuthorScreen(data, pos));
+                } else {
+                    context.client().setScreen(
+                        new dev.blockacademy.tipsign.screen.TipSignReaderScreen(data, pos));
+                }
+            });
+        });
+    }
+
+    @Override
+    public void sendUpdateToServer(BlockPos pos, TipSignData data) {
+        String json = TipSignDataCodec.toJson(data);
+        ClientPlayNetworking.send(new UpdateSignPayload(pos, json));
     }
 
     @Override
