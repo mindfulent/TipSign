@@ -70,6 +70,7 @@ public class VersionAdapterImpl implements VersionAdapter {
 
         if (data.placedAt() != null) tag.putString("PlacedAt", data.placedAt().toString());
         if (data.lastEditedAt() != null) tag.putString("LastEditedAt", data.lastEditedAt().toString());
+        tag.putInt("BgColorIndex", data.bgColorIndex());
     }
 
     @Override
@@ -99,8 +100,9 @@ public class VersionAdapterImpl implements VersionAdapter {
 
         Instant placedAt = parseInstant(tag, "PlacedAt");
         Instant lastEditedAt = parseInstant(tag, "LastEditedAt");
+        int bgColorIndex = tag.contains("BgColorIndex") ? tag.getInt("BgColorIndex") : 0;
 
-        be.setData(new TipSignData(id, title, pages, kofiUrl, patreonUrl, ownerUuid, ownerUsername, placedAt, lastEditedAt));
+        be.setData(new TipSignData(id, title, pages, kofiUrl, patreonUrl, ownerUuid, ownerUsername, placedAt, lastEditedAt, bgColorIndex));
     }
 
     @Override
@@ -152,7 +154,8 @@ public class VersionAdapterImpl implements VersionAdapter {
                     existing.ownerUuid(),
                     existing.ownerUsername(),
                     existing.placedAt(),
-                    Instant.now()
+                    Instant.now(),
+                    updated.bgColorIndex()
                 );
                 tipSign.setData(merged);
 

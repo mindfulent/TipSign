@@ -14,6 +14,8 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBlockEntity> {
 
+    private static final int TEXT_COLOR = 0xFF1A1008; // Dark brown (near-black)
+
     private final Font font;
 
     public TipSignBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
@@ -31,12 +33,9 @@ public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBl
 
         BlockState state = be.getBlockState();
         Direction facing = state.getValue(TipSignBlock.FACING);
+        boolean isWall = state.getValue(TipSignBlock.WALL);
 
         poseStack.pushPose();
-
-        // Position text centered on the sign board face
-        // Board is at y=7-14 (center y=10.5/16 = 0.656), z=6 on north face
-        poseStack.translate(0.5, 0.656, 0.5);
 
         // Rotate to face the correct direction
         float rotation = switch (facing) {
@@ -46,10 +45,19 @@ public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBl
             case EAST -> 270f;
             default -> 0f;
         };
-        poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
 
-        // Move forward to board face (z=6/16 = 0.375 from center)
-        poseStack.translate(0, 0, -0.377);
+        if (isWall) {
+            // Wall-mounted: board at y=4-12 (center y=8/16=0.5), flush against back wall
+            poseStack.translate(0.5, 0.5, 0.5);
+            poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
+            poseStack.translate(0, 0, 0.186);
+        } else {
+            // Standing: board at y=7-14 (center y=10.5/16=0.656), post-mounted
+            poseStack.translate(0.5, 0.656, 0.5);
+            poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
+            poseStack.translate(0, 0, -0.377);
+        }
+
         float scale = 0.012f;
         poseStack.scale(-scale, -scale, scale);
 
@@ -58,7 +66,7 @@ public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBl
         float x = -textWidth / 2f;
 
         this.font.drawInBatch(
-            title, x, 0, 0xFFEEDDCC,
+            title, x, 0, TEXT_COLOR,
             false, poseStack.last().pose(), bufferSource,
             Font.DisplayMode.NORMAL, 0, packedLight
         );

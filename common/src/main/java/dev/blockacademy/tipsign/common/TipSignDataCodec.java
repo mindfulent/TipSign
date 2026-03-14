@@ -37,6 +37,7 @@ public final class TipSignDataCodec {
         if (data.ownerUsername() != null) obj.addProperty("ownerUsername", data.ownerUsername());
         if (data.placedAt() != null) obj.addProperty("placedAt", data.placedAt().toString());
         if (data.lastEditedAt() != null) obj.addProperty("lastEditedAt", data.lastEditedAt().toString());
+        if (data.bgColorIndex() != 0) obj.addProperty("bgColorIndex", data.bgColorIndex());
 
         return GSON.toJson(obj);
     }
@@ -63,8 +64,9 @@ public final class TipSignDataCodec {
 
         Instant placedAt = parseInstant(obj, "placedAt");
         Instant lastEditedAt = parseInstant(obj, "lastEditedAt");
+        int bgColorIndex = obj.has("bgColorIndex") ? obj.get("bgColorIndex").getAsInt() : 0;
 
-        return new TipSignData(id, title, pages, kofiUrl, patreonUrl, ownerUuid, ownerUsername, placedAt, lastEditedAt);
+        return new TipSignData(id, title, pages, kofiUrl, patreonUrl, ownerUuid, ownerUsername, placedAt, lastEditedAt, bgColorIndex);
     }
 
     private static String getStr(JsonObject obj, String key, String def) {

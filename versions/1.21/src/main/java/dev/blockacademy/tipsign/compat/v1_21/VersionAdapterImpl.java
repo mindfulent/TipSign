@@ -7,11 +7,8 @@ import dev.blockacademy.tipsign.common.TipSignDataCodec;
 import dev.blockacademy.tipsign.compat.VersionAdapter;
 import dev.blockacademy.tipsign.compat.v1_21.network.OpenSignPayload;
 import dev.blockacademy.tipsign.compat.v1_21.network.UpdateSignPayload;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -61,6 +58,7 @@ public class VersionAdapterImpl implements VersionAdapter {
 
         if (data.placedAt() != null) tag.putString("PlacedAt", data.placedAt().toString());
         if (data.lastEditedAt() != null) tag.putString("LastEditedAt", data.lastEditedAt().toString());
+        tag.putInt("BgColorIndex", data.bgColorIndex());
     }
 
     @Override
@@ -88,8 +86,9 @@ public class VersionAdapterImpl implements VersionAdapter {
 
         Instant placedAt = parseInstant(tag, "PlacedAt");
         Instant lastEditedAt = parseInstant(tag, "LastEditedAt");
+        int bgColorIndex = tag.contains("BgColorIndex") ? tag.getInt("BgColorIndex") : 0;
 
-        be.setData(new TipSignData(id, title, pages, kofiUrl, patreonUrl, ownerUuid, ownerUsername, placedAt, lastEditedAt));
+        be.setData(new TipSignData(id, title, pages, kofiUrl, patreonUrl, ownerUuid, ownerUsername, placedAt, lastEditedAt, bgColorIndex));
     }
 
     @Override
@@ -146,7 +145,8 @@ public class VersionAdapterImpl implements VersionAdapter {
                     existing.ownerUuid(),
                     existing.ownerUsername(),
                     existing.placedAt(),
-                    Instant.now()
+                    Instant.now(),
+                    updated.bgColorIndex()
                 );
                 tipSign.setData(merged);
 
@@ -164,27 +164,12 @@ public class VersionAdapterImpl implements VersionAdapter {
 
     @Override
     public void registerClientPlayReceivers() {
-        ClientPlayNetworking.registerGlobalReceiver(OpenSignPayload.TYPE, (payload, context) -> {
-            TipSignData data = TipSignDataCodec.fromJson(payload.jsonData());
-            BlockPos pos = payload.pos();
-            boolean authorMode = payload.authorMode();
-
-            context.client().execute(() -> {
-                if (authorMode) {
-                    context.client().setScreen(
-                        new dev.blockacademy.tipsign.screen.TipSignAuthorScreen(data, pos));
-                } else {
-                    context.client().setScreen(
-                        new dev.blockacademy.tipsign.screen.TipSignReaderScreen(data, pos));
-                }
-            });
-        });
+        ClientNetworkHandler.registerReceivers();
     }
 
     @Override
     public void sendUpdateToServer(BlockPos pos, TipSignData data) {
-        String json = TipSignDataCodec.toJson(data);
-        ClientPlayNetworking.send(new UpdateSignPayload(pos, json));
+        ClientNetworkHandler.sendUpdate(pos, data);
     }
 
     @Override

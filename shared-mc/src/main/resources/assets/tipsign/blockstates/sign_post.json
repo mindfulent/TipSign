@@ -1,8 +1,12 @@
 {
   "variants": {
-    "facing=north": { "model": "tipsign:block/sign_post" },
-    "facing=south": { "model": "tipsign:block/sign_post", "y": 180 },
-    "facing=west": { "model": "tipsign:block/sign_post", "y": 270 },
-    "facing=east": { "model": "tipsign:block/sign_post", "y": 90 }
+    "facing=north,wall=false": { "model": "tipsign:block/sign_post" },
+    "facing=south,wall=false": { "model": "tipsign:block/sign_post", "y": 180 },
+    "facing=west,wall=false":  { "model": "tipsign:block/sign_post", "y": 270 },
+    "facing=east,wall=false":  { "model": "tipsign:block/sign_post", "y": 90 },
+    "facing=north,wall=true":  { "model": "tipsign:block/wall_sign_post" },
+    "facing=south,wall=true":  { "model": "tipsign:block/wall_sign_post", "y": 180 },
+    "facing=west,wall=true":   { "model": "tipsign:block/wall_sign_post", "y": 270 },
+    "facing=east,wall=true":   { "model": "tipsign:block/wall_sign_post", "y": 90 }
   }
 }

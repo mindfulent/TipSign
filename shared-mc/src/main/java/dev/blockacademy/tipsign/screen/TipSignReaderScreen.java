@@ -18,16 +18,9 @@ public class TipSignReaderScreen extends Screen {
 
     private static final int PANEL_WIDTH = 300;
     private static final int PANEL_HEIGHT = 220;
-    private static final int BG_COLOR = 0xEE3B2A1A;
-    private static final int BORDER_COLOR = 0xFF2A1A0A;
     private static final int TITLE_COLOR = 0xFFEEDDCC;
     private static final int TEXT_COLOR = 0xFFE8D8C8;
-    private static final int LINK_COLOR = 0xFF6699FF;
     private static final int PAGE_COLOR = 0xFFAA9988;
-
-    // Ko-fi / Patreon button colors
-    private static final int KOFI_COLOR = 0xFFFF5E5B;
-    private static final int PATREON_COLOR = 0xFFFF424D;
 
     private final TipSignData data;
     private final BlockPos pos;
@@ -47,7 +40,7 @@ public class TipSignReaderScreen extends Screen {
         panelTop = (this.height - PANEL_HEIGHT) / 2;
 
         int bottomY = panelTop + PANEL_HEIGHT - 28;
-        int btnWidth = 80;
+        int btnWidth = 120; // Wider buttons to fit full text
 
         // Page navigation arrows
         if (data.pages().size() > 1) {
@@ -60,7 +53,7 @@ public class TipSignReaderScreen extends Screen {
             }).bounds(panelLeft + PANEL_WIDTH - 34, bottomY, 24, 20).build());
         }
 
-        // Supporter buttons
+        // Supporter buttons (wider to avoid text scrolling)
         int supporterY = bottomY - 24;
         int supporterX = panelLeft + PANEL_WIDTH / 2;
 
@@ -69,15 +62,15 @@ public class TipSignReaderScreen extends Screen {
 
         if (hasKofi && hasPatreon) {
             addSupporterButton(supporterX - btnWidth - 4, supporterY, btnWidth,
-                "tipsign.screen.reader.kofi", KOFI_COLOR, data.kofiUrl());
+                "tipsign.screen.reader.kofi", data.kofiUrl());
             addSupporterButton(supporterX + 4, supporterY, btnWidth,
-                "tipsign.screen.reader.patreon", PATREON_COLOR, data.patreonUrl());
+                "tipsign.screen.reader.patreon", data.patreonUrl());
         } else if (hasKofi) {
             addSupporterButton(supporterX - btnWidth / 2, supporterY, btnWidth,
-                "tipsign.screen.reader.kofi", KOFI_COLOR, data.kofiUrl());
+                "tipsign.screen.reader.kofi", data.kofiUrl());
         } else if (hasPatreon) {
             addSupporterButton(supporterX - btnWidth / 2, supporterY, btnWidth,
-                "tipsign.screen.reader.patreon", PATREON_COLOR, data.patreonUrl());
+                "tipsign.screen.reader.patreon", data.patreonUrl());
         }
 
         // Close button
@@ -86,7 +79,7 @@ public class TipSignReaderScreen extends Screen {
         }).bounds(panelLeft + PANEL_WIDTH / 2 - 30, panelTop + PANEL_HEIGHT - 5, 60, 20).build());
     }
 
-    private void addSupporterButton(int x, int y, int width, String translationKey, int color, String url) {
+    private void addSupporterButton(int x, int y, int width, String translationKey, String url) {
         Button btn = Button.builder(Component.translatable(translationKey), b -> {
             openUrlWithConfirmation(url);
         }).bounds(x, y, width, 20).build();
@@ -111,9 +104,12 @@ public class TipSignReaderScreen extends Screen {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
 
+        int bgColor = TipSignData.bgColor(data.bgColorIndex());
+        int borderColor = TipSignData.borderColor(data.bgColorIndex());
+
         // Panel background with border
-        graphics.fill(panelLeft - 2, panelTop - 2, panelLeft + PANEL_WIDTH + 2, panelTop + PANEL_HEIGHT + 18, BORDER_COLOR);
-        graphics.fill(panelLeft, panelTop, panelLeft + PANEL_WIDTH, panelTop + PANEL_HEIGHT + 16, BG_COLOR);
+        graphics.fill(panelLeft - 2, panelTop - 2, panelLeft + PANEL_WIDTH + 2, panelTop + PANEL_HEIGHT + 18, borderColor);
+        graphics.fill(panelLeft, panelTop, panelLeft + PANEL_WIDTH, panelTop + PANEL_HEIGHT + 16, bgColor);
 
         // Title (bold, centered)
         String title = data.title() != null ? data.title() : TipSignData.DEFAULT_TITLE;

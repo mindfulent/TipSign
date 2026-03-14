@@ -18,9 +18,7 @@ import java.util.List;
 public class TipSignAuthorScreen extends Screen {
 
     private static final int PANEL_WIDTH = 320;
-    private static final int PANEL_HEIGHT = 260;
-    private static final int BG_COLOR = 0xEE3B2A1A;
-    private static final int BORDER_COLOR = 0xFF2A1A0A;
+    private static final int PANEL_HEIGHT = 290;
     private static final int LABEL_COLOR = 0xFFE8D8C8;
     private static final int ERROR_COLOR = 0xFFFF6666;
 
@@ -36,6 +34,7 @@ public class TipSignAuthorScreen extends Screen {
     private String editTitle;
     private String editKofi;
     private String editPatreon;
+    private int editBgColorIndex;
     private String validationError = null;
     private boolean deleteConfirmPending = false;
 
@@ -49,6 +48,7 @@ public class TipSignAuthorScreen extends Screen {
         this.editTitle = data.title() != null ? data.title() : TipSignData.DEFAULT_TITLE;
         this.editKofi = data.kofiUrl() != null ? data.kofiUrl() : "";
         this.editPatreon = data.patreonUrl() != null ? data.patreonUrl() : "";
+        this.editBgColorIndex = data.bgColorIndex();
     }
 
     @Override
@@ -66,10 +66,11 @@ public class TipSignAuthorScreen extends Screen {
         this.titleField.setValue(editTitle);
         this.titleField.setResponder(s -> editTitle = s);
         this.addRenderableWidget(titleField);
-        y += 22;
+        y += 24;
 
-        // Body text area
-        this.bodyField = new EditBox(this.font, panelLeft + 10, y, PANEL_WIDTH - 20, 16, Component.literal("Body"));
+        // Body text area (3 lines tall)
+        int bodyHeight = 40;
+        this.bodyField = new EditBox(this.font, panelLeft + 10, y, PANEL_WIDTH - 20, bodyHeight, Component.literal("Body"));
         this.bodyField.setMaxLength(1120);
         if (!pages.isEmpty() && currentPage < pages.size()) {
             this.bodyField.setValue(pages.get(currentPage));
@@ -80,7 +81,7 @@ public class TipSignAuthorScreen extends Screen {
             }
         });
         this.addRenderableWidget(bodyField);
-        y += 22;
+        y += bodyHeight + 4;
 
         // Page navigation
         int navY = y;
@@ -98,7 +99,6 @@ public class TipSignAuthorScreen extends Screen {
             }
         }).bounds(panelLeft + PANEL_WIDTH - 75, navY, 65, 20).build());
 
-        // Add/Delete page
         TipSignConfig config = TipSignConfig.get();
         this.addRenderableWidget(Button.builder(Component.literal("+ Page"), btn -> {
             if (pages.size() < config.maxPages()) {
@@ -131,13 +131,21 @@ public class TipSignAuthorScreen extends Screen {
         this.patreonField.setMaxLength(128);
         this.patreonField.setValue(editPatreon);
         this.patreonField.setResponder(s -> editPatreon = s);
-        y += 22;
         this.addRenderableWidget(patreonField);
+        y += 24;
 
-        // Formatting reference
-        y += 6;
+        // Background color cycle button
+        this.addRenderableWidget(Button.builder(
+            Component.literal("Theme: " + TipSignData.BG_PRESET_NAMES[editBgColorIndex]),
+            btn -> {
+                editBgColorIndex = (editBgColorIndex + 1) % TipSignData.BG_PRESETS.length;
+                btn.setMessage(Component.literal("Theme: " + TipSignData.BG_PRESET_NAMES[editBgColorIndex]));
+            }
+        ).bounds(panelLeft + 10, y, 120, 20).build());
 
-        // Save / Cancel buttons
+        y += 26;
+
+        // Save / Cancel / Delete buttons
         int btnY = panelTop + PANEL_HEIGHT - 28;
         this.addRenderableWidget(Button.builder(Component.translatable("tipsign.screen.author.save"), btn -> {
             save();
@@ -147,16 +155,13 @@ public class TipSignAuthorScreen extends Screen {
             this.onClose();
         }).bounds(panelLeft + 95, btnY, 80, 20).build());
 
-        // Delete All Content button (destructive, right side)
         this.addRenderableWidget(Button.builder(
             Component.translatable("tipsign.screen.author.delete_all").withStyle(Style.EMPTY.withColor(0xFF6666)),
             btn -> {
                 if (deleteConfirmPending) {
-                    // Second click: actually delete
                     deleteAllContent();
                     deleteConfirmPending = false;
                 } else {
-                    // First click: show confirmation
                     deleteConfirmPending = true;
                 }
             }
@@ -166,7 +171,6 @@ public class TipSignAuthorScreen extends Screen {
     private void save() {
         validationError = null;
 
-        // Validate Ko-fi URL
         String kofiUrl = null;
         if (!editKofi.isBlank()) {
             kofiUrl = UrlValidator.toKofiUrl(editKofi);
@@ -176,7 +180,6 @@ public class TipSignAuthorScreen extends Screen {
             }
         }
 
-        // Validate Patreon URL
         String patreonUrl = null;
         if (!editPatreon.isBlank()) {
             patreonUrl = UrlValidator.toPatreonUrl(editPatreon);
@@ -195,7 +198,8 @@ public class TipSignAuthorScreen extends Screen {
             originalData.ownerUuid(),
             originalData.ownerUsername(),
             originalData.placedAt(),
-            originalData.lastEditedAt()
+            originalData.lastEditedAt(),
+            editBgColorIndex
         );
 
         VersionAdapter.INSTANCE.sendUpdateToServer(pos, updated);
@@ -215,7 +219,6 @@ public class TipSignAuthorScreen extends Screen {
         kofiField.setValue("");
         patreonField.setValue("");
 
-        // Send blank data to server
         TipSignData blank = new TipSignData(
             originalData.id(),
             TipSignData.DEFAULT_TITLE,
@@ -225,52 +228,49 @@ public class TipSignAuthorScreen extends Screen {
             originalData.ownerUuid(),
             originalData.ownerUsername(),
             originalData.placedAt(),
-            originalData.lastEditedAt()
+            originalData.lastEditedAt(),
+            editBgColorIndex
         );
         VersionAdapter.INSTANCE.sendUpdateToServer(pos, blank);
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        // 1.20.1: renderBackground takes only GuiGraphics (no mouse/tick params)
+        // 1.20.1: renderBackground takes only GuiGraphics
         this.renderBackground(graphics);
 
-        // Panel background
-        graphics.fill(panelLeft - 2, panelTop - 2, panelLeft + PANEL_WIDTH + 2, panelTop + PANEL_HEIGHT + 2, BORDER_COLOR);
-        graphics.fill(panelLeft, panelTop, panelLeft + PANEL_WIDTH, panelTop + PANEL_HEIGHT, BG_COLOR);
+        int bgColor = TipSignData.bgColor(editBgColorIndex);
+        int borderColor = TipSignData.borderColor(editBgColorIndex);
+
+        graphics.fill(panelLeft - 2, panelTop - 2, panelLeft + PANEL_WIDTH + 2, panelTop + PANEL_HEIGHT + 2, borderColor);
+        graphics.fill(panelLeft, panelTop, panelLeft + PANEL_WIDTH, panelTop + PANEL_HEIGHT, bgColor);
 
         int y = panelTop + 15;
-
-        // Labels
         graphics.drawString(this.font, "Title:", panelLeft + 12, y, LABEL_COLOR);
-        y += 22;
+        y += 24;
 
-        // Body label with page counter
-        String pageLabel = "Page " + (currentPage + 1) + "/" + pages.size();
-        graphics.drawString(this.font, pageLabel, panelLeft + 12, y + 3, 0xFFAA9988);
-        y += 22 + 28;
+        graphics.drawString(this.font, "Page " + (currentPage + 1) + "/" + pages.size(),
+            panelLeft + 12, y - 2, 0xFFAA9988);
+        y += 40 + 4 + 28;
 
-        // Ko-fi / Patreon labels
         graphics.drawString(this.font, "Ko-fi:", panelLeft + 12, y, LABEL_COLOR);
         y += 22;
         graphics.drawString(this.font, "Patreon:", panelLeft + 12, y, LABEL_COLOR);
-        y += 28;
+        y += 24;
 
-        // Formatting reference
+        y += 22;
         graphics.drawString(this.font, "\u00a7oLinks: [text](url)  \u00a7oBold: \u00a7l**text**",
             panelLeft + 12, y, 0xFF888877);
 
-        // Validation error
         if (validationError != null) {
             graphics.drawCenteredString(this.font, validationError,
-                panelLeft + PANEL_WIDTH / 2, panelTop + PANEL_HEIGHT - 42, ERROR_COLOR);
+                panelLeft + PANEL_WIDTH / 2, panelTop + PANEL_HEIGHT - 44, ERROR_COLOR);
         }
 
-        // Delete confirmation message
         if (deleteConfirmPending) {
             graphics.drawCenteredString(this.font,
                 Component.translatable("tipsign.screen.author.delete_confirm"),
-                panelLeft + PANEL_WIDTH / 2, panelTop + PANEL_HEIGHT - 42, ERROR_COLOR);
+                panelLeft + PANEL_WIDTH / 2, panelTop + PANEL_HEIGHT - 44, ERROR_COLOR);
         }
 
         super.render(graphics, mouseX, mouseY, partialTick);

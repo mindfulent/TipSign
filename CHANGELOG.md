@@ -2,6 +2,29 @@
 
 All notable changes to TipSign will be documented in this file.
 
+## [0.13.0] - 2026-03-14
+
+### Added
+- **Wall-mounted placement** — Signs placed on the side of a block now mount flush against the wall without the vertical post or cap. Standing post form preserved when placed on ground.
+- **Background color themes** — 8 wood/stone theme presets (Oak, Dark Oak, Spruce, Birch, Crimson, Warped, Stone, Obsidian) selectable via "Theme" button in the editor. Affects both reader and editor panel backgrounds.
+- **Default title uses player name** — Newly placed signs default to "Build by <username>" instead of "Notice".
+
+### Changed
+- **Wider supporter buttons** — Ko-fi and Patreon buttons increased from 80px to 120px to prevent text truncation.
+- **Larger body text field** — Editor body input increased from 1 line to 3 lines (40px) for easier editing.
+- **In-world text color** — BER title text changed from light cream (0xFFEEDDCC) to dark brown (0xFF1A1008) for better readability.
+- **Delete confirmation fits panel** — Confirmation message now renders within the panel bounds instead of overflowing.
+- **Max title length** — Increased from 32 to 48 characters to accommodate "Build by" prefix with longer usernames.
+- **Panel height** — Editor panel increased from 260px to 290px to accommodate new theme button and taller body field.
+
+---
+
+## [0.12.0] - 2026-03-14
+
+### Fixed
+- Server crash on startup: VersionAdapterImpl referenced client-only classes (Screen, ClientPlayNetworking) directly, causing NoClassDefFoundError on dedicated servers
+- Extracted client networking into separate ClientNetworkHandler class to isolate client imports from ServiceLoader class scanning
+
 ## [0.11.0] - 2026-03-14
 
 ### Fixed

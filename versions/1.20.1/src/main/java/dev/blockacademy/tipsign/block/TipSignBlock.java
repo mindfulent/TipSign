@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.BlockHitResult;
@@ -35,31 +36,60 @@ public class TipSignBlock extends BaseEntityBlock {
 
     // No CODEC field needed in 1.20.1 (block codecs not required)
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final BooleanProperty WALL = BooleanProperty.create("wall");
 
-    // Collision shape: post (7-9) + board (1-15 at y7-14)
-    private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 16, 15);
+    // Standing sign collision shape
+    private static final VoxelShape SHAPE_STANDING = Block.box(1, 0, 1, 15, 16, 15);
+
+    // Wall-mounted shapes (thin board flush against each wall)
+    private static final VoxelShape WALL_NORTH = Block.box(1, 4, 15, 15, 12, 16);
+    private static final VoxelShape WALL_SOUTH = Block.box(1, 4, 0, 15, 12, 1);
+    private static final VoxelShape WALL_EAST  = Block.box(0, 4, 1, 1, 12, 15);
+    private static final VoxelShape WALL_WEST  = Block.box(15, 4, 1, 16, 12, 15);
 
     public TipSignBlock(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+        this.registerDefaultState(this.stateDefinition.any()
+            .setValue(FACING, Direction.NORTH)
+            .setValue(WALL, false));
     }
 
     // No codec() override needed in 1.20.1
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, WALL);
     }
 
     @Nullable
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext ctx) {
-        return this.defaultBlockState().setValue(FACING, ctx.getHorizontalDirection().getOpposite());
+        Direction clickedFace = ctx.getClickedFace();
+        if (clickedFace.getAxis().isHorizontal()) {
+            BlockPos behind = ctx.getClickedPos().relative(clickedFace.getOpposite());
+            if (ctx.getLevel().getBlockState(behind).isFaceSturdy(ctx.getLevel(), behind, clickedFace)) {
+                return this.defaultBlockState()
+                    .setValue(FACING, clickedFace)
+                    .setValue(WALL, true);
+            }
+        }
+        return this.defaultBlockState()
+            .setValue(FACING, ctx.getHorizontalDirection().getOpposite())
+            .setValue(WALL, false);
     }
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext ctx) {
-        return SHAPE;
+        if (state.getValue(WALL)) {
+            return switch (state.getValue(FACING)) {
+                case NORTH -> WALL_NORTH;
+                case SOUTH -> WALL_SOUTH;
+                case EAST -> WALL_EAST;
+                case WEST -> WALL_WEST;
+                default -> SHAPE_STANDING;
+            };
+        }
+        return SHAPE_STANDING;
     }
 
     @Override

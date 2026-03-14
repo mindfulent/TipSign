@@ -1,0 +1,22 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "board": "minecraft:block/oak_planks",
+    "particle": "minecraft:block/oak_planks"
+  },
+  "elements": [
+    {
+      "__comment": "Sign board (wall-mounted, flush against back wall)",
+      "from": [1, 4, 15],
+      "to": [15, 12, 16],
+      "faces": {
+        "north": { "uv": [1, 4, 15, 12], "texture": "#board" },
+        "south": { "uv": [1, 4, 15, 12], "texture": "#board" },
+        "east":  { "uv": [15, 4, 16, 12], "texture": "#board" },
+        "west":  { "uv": [15, 4, 16, 12], "texture": "#board" },
+        "up":    { "uv": [1, 15, 15, 16], "texture": "#board" },
+        "down":  { "uv": [1, 15, 15, 16], "texture": "#board" }
+      }
+    }
+  ]
+}
