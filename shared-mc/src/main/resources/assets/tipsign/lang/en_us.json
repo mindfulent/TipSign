@@ -1,0 +1,21 @@
+{
+  "block.tipsign.sign_post": "Tip Sign",
+  "item.tipsign.sign_post": "Tip Sign",
+  "tipsign.screen.reader.title": "Tip Sign",
+  "tipsign.screen.author.title": "Edit Tip Sign",
+  "tipsign.screen.reader.page": "Page %d / %d",
+  "tipsign.screen.author.save": "Save",
+  "tipsign.screen.author.cancel": "Cancel",
+  "tipsign.screen.author.delete_all": "Delete All Content",
+  "tipsign.screen.author.delete_confirm": "This will permanently delete all text, links, and settings. Continue?",
+  "tipsign.screen.author.delete_button": "Delete",
+  "tipsign.screen.author.cancel_delete": "Cancel",
+  "tipsign.screen.reader.kofi": "Support on Ko-fi",
+  "tipsign.screen.reader.patreon": "Become a Patron",
+  "tipsign.screen.reader.close": "Close",
+  "tipsign.screen.confirm_url": "This will open %s in your browser. Continue?",
+  "tipsign.screen.confirm_yes": "Yes",
+  "tipsign.screen.confirm_cancel": "Cancel",
+  "tipsign.message.not_owner": "You are not the owner of this Tip Sign.",
+  "tipsign.message.links_disabled": "Hyperlinks are disabled on this server."
+}

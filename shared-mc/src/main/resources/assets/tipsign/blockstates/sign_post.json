@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "tipsign:block/sign_post" },
+    "facing=south": { "model": "tipsign:block/sign_post", "y": 180 },
+    "facing=west": { "model": "tipsign:block/sign_post", "y": 270 },
+    "facing=east": { "model": "tipsign:block/sign_post", "y": 90 }
+  }
+}

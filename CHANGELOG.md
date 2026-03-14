@@ -2,6 +2,17 @@
 
 All notable changes to TipSign will be documented in this file.
 
+## [0.4.0] - 2026-03-14
+
+### Added
+- TipSignBlock — BaseEntityBlock with FACING property, placement stores owner UUID
+- TipSignBlockEntity — holds TipSignData, delegates serialization to VersionAdapter
+- Block/item/block entity registration in TipSignMod
+- Band C VersionAdapterImpl with CompoundTag serialization (save/load)
+- Client sync via getUpdatePacket/getUpdateTag for title rendering
+- Blockstate, block model (placeholder oak_planks), item model, en_us.json lang
+- Creative tab entry in Functional Blocks
+
 ## [0.3.0] - 2026-03-14
 
 ### Added
