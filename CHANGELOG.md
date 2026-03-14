@@ -2,6 +2,17 @@
 
 All notable changes to TipSign will be documented in this file.
 
+## [0.6.0] - 2026-03-14
+
+### Added
+- Full Reader screen with weathered-plank background, bold title, separator, page navigation
+- Ko-fi (#FF5E5B) and Patreon (#FF424D) supporter buttons in Reader with browser confirmation
+- Full Author screen with title, body, Ko-fi/Patreon URL fields, validation, formatting reference
+- Multi-page editor with add/delete page, config-aware maxPages limit
+- Delete All Content with two-step confirmation flow
+- Inline [link](url) parsing in Reader (rendered as plain text for now)
+- URL validation for Ko-fi/Patreon inputs in Author screen
+
 ## [0.5.0] - 2026-03-14
 
 ### Added
