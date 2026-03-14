@@ -34,8 +34,9 @@ public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBl
 
         poseStack.pushPose();
 
-        // Position text on the front face of the block
-        poseStack.translate(0.5, 0.75, 0.5);
+        // Position text centered on the sign board face
+        // Board is at y=7-14 (center y=10.5/16 = 0.656), z=6 on north face
+        poseStack.translate(0.5, 0.656, 0.5);
 
         // Rotate to face the correct direction
         float rotation = switch (facing) {
@@ -47,9 +48,9 @@ public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBl
         };
         poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
 
-        // Move forward to block face and scale down
-        poseStack.translate(0, 0, 0.501);
-        float scale = 0.015f;
+        // Move forward to board face (z=6/16 = 0.375 from center)
+        poseStack.translate(0, 0, -0.377);
+        float scale = 0.012f;
         poseStack.scale(-scale, -scale, scale);
 
         // Center the title text

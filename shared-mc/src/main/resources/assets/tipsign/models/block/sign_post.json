@@ -1,6 +1,49 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/block",
   "textures": {
-    "all": "minecraft:block/oak_planks"
-  }
+    "post": "minecraft:block/stripped_oak_log",
+    "board": "minecraft:block/oak_planks",
+    "particle": "minecraft:block/oak_planks"
+  },
+  "elements": [
+    {
+      "__comment": "Vertical post (center)",
+      "from": [7, 0, 7],
+      "to": [9, 16, 9],
+      "faces": {
+        "north": { "uv": [7, 0, 9, 16], "texture": "#post" },
+        "south": { "uv": [7, 0, 9, 16], "texture": "#post" },
+        "east":  { "uv": [7, 0, 9, 16], "texture": "#post" },
+        "west":  { "uv": [7, 0, 9, 16], "texture": "#post" },
+        "up":    { "uv": [7, 7, 9, 9],  "texture": "#post" },
+        "down":  { "uv": [7, 7, 9, 9],  "texture": "#post" }
+      }
+    },
+    {
+      "__comment": "Sign board (front-facing, mounted on post)",
+      "from": [1, 7, 6],
+      "to": [15, 14, 7],
+      "faces": {
+        "north": { "uv": [1, 2, 15, 9],  "texture": "#board" },
+        "south": { "uv": [1, 2, 15, 9],  "texture": "#board" },
+        "east":  { "uv": [6, 2, 7, 9],   "texture": "#board" },
+        "west":  { "uv": [6, 2, 7, 9],   "texture": "#board" },
+        "up":    { "uv": [1, 6, 15, 7],  "texture": "#board" },
+        "down":  { "uv": [1, 6, 15, 7],  "texture": "#board" }
+      }
+    },
+    {
+      "__comment": "Post cap (top decorative element)",
+      "from": [6, 14, 6],
+      "to": [10, 16, 10],
+      "faces": {
+        "north": { "uv": [6, 0, 10, 2],  "texture": "#post" },
+        "south": { "uv": [6, 0, 10, 2],  "texture": "#post" },
+        "east":  { "uv": [6, 0, 10, 2],  "texture": "#post" },
+        "west":  { "uv": [6, 0, 10, 2],  "texture": "#post" },
+        "up":    { "uv": [6, 6, 10, 10], "texture": "#post" },
+        "down":  { "uv": [6, 6, 10, 10], "texture": "#post", "cullface": "down" }
+      }
+    }
+  ]
 }

@@ -2,6 +2,15 @@
 
 All notable changes to TipSign will be documented in this file.
 
+## [0.9.0] - 2026-03-14
+
+### Changed
+- Custom sign-post block model with vertical post, mounted board, and decorative cap
+- Uses stripped_oak_log for post and oak_planks for board (placeholder textures)
+- BER title text repositioned and rescaled for new board geometry
+- VoxelShape updated to match sign post silhouette
+- Blockstate rotations for all 4 facings
+
 ## [0.8.0] - 2026-03-14
 
 ### Added

@@ -36,8 +36,8 @@ public class TipSignBlock extends BaseEntityBlock {
     public static final MapCodec<TipSignBlock> CODEC = simpleCodec(TipSignBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-    // Collision shape: a post with a sign board on top
-    private static final VoxelShape SHAPE = Block.box(4, 0, 4, 12, 16, 12);
+    // Collision shape: post (7-9) + board (1-15 at y7-14)
+    private static final VoxelShape SHAPE = Block.box(1, 0, 1, 15, 16, 15);
 
     public TipSignBlock(Properties properties) {
         super(properties);
