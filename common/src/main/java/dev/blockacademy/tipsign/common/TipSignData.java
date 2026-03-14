@@ -48,12 +48,28 @@ public record TipSignData(
         "Oak", "Dark Oak", "Spruce", "Birch", "Crimson", "Warped", "Stone", "Obsidian"
     };
 
+    // Block tint colors — calibrated for multiplicative blending against oak_planks texture
+    public static final int[] BLOCK_TINT_PRESETS = {
+        0xFFFFFFFF,  // Oak — no tint (oak_planks base)
+        0xFF6B4A28,  // Dark Oak
+        0xFF7A6845,  // Spruce
+        0xFFE8D8A8,  // Birch
+        0xFFD06060,  // Crimson
+        0xFF50B8A0,  // Warped
+        0xFF909098,  // Stone
+        0xFF383848,  // Obsidian
+    };
+
     public static int bgColor(int index) {
         return BG_PRESETS[Math.max(0, Math.min(index, BG_PRESETS.length - 1))];
     }
 
     public static int borderColor(int index) {
         return BG_BORDER_PRESETS[Math.max(0, Math.min(index, BG_BORDER_PRESETS.length - 1))];
+    }
+
+    public static int blockTintColor(int index) {
+        return BLOCK_TINT_PRESETS[Math.max(0, Math.min(index, BLOCK_TINT_PRESETS.length - 1))];
     }
 
     public static TipSignData createNew(UUID ownerUuid, String ownerUsername) {

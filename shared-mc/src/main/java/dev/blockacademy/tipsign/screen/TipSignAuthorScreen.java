@@ -12,6 +12,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 
+import net.minecraft.util.FormattedCharSequence;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -281,9 +283,14 @@ public class TipSignAuthorScreen extends Screen {
 
         // Delete confirmation message (above buttons, within panel)
         if (deleteConfirmPending) {
-            graphics.drawCenteredString(this.font,
-                Component.translatable("tipsign.screen.author.delete_confirm"),
-                panelLeft + PANEL_WIDTH / 2, panelTop + PANEL_HEIGHT - 44, ERROR_COLOR);
+            List<FormattedCharSequence> confirmLines = this.font.split(
+                Component.translatable("tipsign.screen.author.delete_confirm"), PANEL_WIDTH - 20);
+            int confirmY = panelTop + PANEL_HEIGHT - 44 - (confirmLines.size() - 1) * 10;
+            for (FormattedCharSequence line : confirmLines) {
+                graphics.drawCenteredString(this.font, line,
+                    panelLeft + PANEL_WIDTH / 2, confirmY, ERROR_COLOR);
+                confirmY += 10;
+            }
         }
 
         super.render(graphics, mouseX, mouseY, partialTick);

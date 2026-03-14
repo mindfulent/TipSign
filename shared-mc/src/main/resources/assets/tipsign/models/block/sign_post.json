@@ -24,12 +24,12 @@
       "from": [1, 7, 6],
       "to": [15, 14, 7],
       "faces": {
-        "north": { "uv": [1, 2, 15, 9],  "texture": "#board" },
-        "south": { "uv": [1, 2, 15, 9],  "texture": "#board" },
-        "east":  { "uv": [6, 2, 7, 9],   "texture": "#board" },
-        "west":  { "uv": [6, 2, 7, 9],   "texture": "#board" },
-        "up":    { "uv": [1, 6, 15, 7],  "texture": "#board" },
-        "down":  { "uv": [1, 6, 15, 7],  "texture": "#board" }
+        "north": { "uv": [1, 2, 15, 9],  "texture": "#board", "tintindex": 0 },
+        "south": { "uv": [1, 2, 15, 9],  "texture": "#board", "tintindex": 0 },
+        "east":  { "uv": [6, 2, 7, 9],   "texture": "#board", "tintindex": 0 },
+        "west":  { "uv": [6, 2, 7, 9],   "texture": "#board", "tintindex": 0 },
+        "up":    { "uv": [1, 6, 15, 7],  "texture": "#board", "tintindex": 0 },
+        "down":  { "uv": [1, 6, 15, 7],  "texture": "#board", "tintindex": 0 }
       }
     },
     {

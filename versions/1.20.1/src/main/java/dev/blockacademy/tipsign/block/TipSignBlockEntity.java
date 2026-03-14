@@ -50,6 +50,16 @@ public class TipSignBlockEntity extends BlockEntity {
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
+        // Sync tags from getUpdateTag() don't contain "Id" — handle them directly
+        if (!tag.contains("Id")) {
+            if (tag.contains("Title")) {
+                this.data = this.data.withTitle(tag.getString("Title"));
+            }
+            if (tag.contains("BgColorIndex")) {
+                this.data = this.data.withBgColorIndex(tag.getInt("BgColorIndex"));
+            }
+            return;
+        }
         VersionAdapter.INSTANCE.loadBlockEntityData(this, tag);
     }
 
@@ -67,6 +77,7 @@ public class TipSignBlockEntity extends BlockEntity {
         CompoundTag tag = new CompoundTag();
         // Only sync title and owner for client-side BER rendering
         tag.putString("Title", data.title() != null ? data.title() : TipSignData.DEFAULT_TITLE);
+        tag.putInt("BgColorIndex", data.bgColorIndex());
         if (data.ownerUuid() != null) {
             tag.putUUID("OwnerUuid", data.ownerUuid());
         }

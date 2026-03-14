@@ -10,9 +10,16 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.List;
+
 public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBlockEntity> {
+
+    private static final int MAX_TEXT_WIDTH = 1000;
+    private static final int LINE_HEIGHT = 10;
 
     private final Font font;
 
@@ -53,15 +60,23 @@ public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBl
         float scale = 0.012f;
         poseStack.scale(-scale, -scale, scale);
 
-        // Center the title text
-        int textWidth = this.font.width(title);
-        float x = -textWidth / 2f;
+        // Word-wrap the title to fit within the sign board
+        List<FormattedCharSequence> lines = this.font.split(FormattedText.of(title), MAX_TEXT_WIDTH);
+        float totalHeight = lines.size() * LINE_HEIGHT;
+        float startY = -totalHeight / 2f;
 
-        this.font.drawInBatch(
-            title, x, 0, 0xFFEEDDCC,
-            false, poseStack.last().pose(), bufferSource,
-            Font.DisplayMode.NORMAL, 0, packedLight
-        );
+        for (int i = 0; i < lines.size(); i++) {
+            FormattedCharSequence line = lines.get(i);
+            int lineWidth = this.font.width(line);
+            float x = -lineWidth / 2f;
+            float y = startY + i * LINE_HEIGHT;
+
+            this.font.drawInBatch(
+                line, x, y, 0xFFEEDDCC,
+                false, poseStack.last().pose(), bufferSource,
+                Font.DisplayMode.NORMAL, 0, packedLight
+            );
+        }
 
         poseStack.popPose();
     }

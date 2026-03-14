@@ -2,6 +2,25 @@
 
 All notable changes to TipSign will be documented in this file.
 
+## [0.15.0] - 2026-03-14
+
+### Fixed
+- **BER title word-wrapping** — Long titles (e.g. "Build by slashdaemon") no longer overflow the sign board edges. Uses `Font.split()` to wrap text across multiple centered lines within the board face.
+- **Delete confirmation text wrapping** — Author screen's "delete all" confirmation message now word-wraps within the panel instead of overflowing on a single line.
+
+---
+
+## [0.14.0] - 2026-03-14
+
+### Fixed
+- **BER title not updating** — In-world sign always showed "Notice" instead of custom title. Root cause: `getUpdateTag()` sync tags lack `Id` field, causing all VersionAdapters to skip client-side data load. `loadAdditional()`/`load()` now handles lightweight sync tags directly before delegating to VersionAdapter.
+- **Responsive reader screen** — Reader panel was fixed at 220px height with wasted blank space. Now dynamically sizes based on content (text lines, supporter buttons, page nav), clamped between 80–300px. Close button placed inside panel bounds.
+
+### Added
+- **In-world block color tinting** — Board faces now tint to match the selected color theme using Minecraft's `BlockColorProvider` + `tintindex` system. Dedicated `BLOCK_TINT_PRESETS` calibrated for multiplicative blending against oak_planks texture.
+
+---
+
 ## [0.13.0] - 2026-03-14
 
 ### Added
