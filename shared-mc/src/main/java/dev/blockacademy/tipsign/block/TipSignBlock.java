@@ -1,6 +1,8 @@
 package dev.blockacademy.tipsign.block;
 
 import dev.blockacademy.tipsign.TipSignMod;
+import dev.blockacademy.tipsign.TipSignPermissions;
+import dev.blockacademy.tipsign.common.TipSignConfig;
 import dev.blockacademy.tipsign.common.TipSignData;
 import dev.blockacademy.tipsign.compat.VersionAdapter;
 import com.mojang.serialization.MapCodec;
@@ -122,5 +124,27 @@ public class TipSignBlock extends BaseEntityBlock {
         }
 
         return InteractionResult.PASS;
+    }
+
+    @Override
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
+            BlockEntity be = level.getBlockEntity(pos);
+            if (be instanceof TipSignBlockEntity tipSign) {
+                if (TipSignConfig.get().ownerOnlyBreak()
+                    && !TipSignPermissions.canBreak(serverPlayer, tipSign)) {
+                    // Block resists breaking for non-owners
+                    serverPlayer.sendSystemMessage(Component.translatable("tipsign.message.not_owner"));
+                    return state;
+                }
+
+                // Serialize data to dropped item
+                ItemStack drop = new ItemStack(TipSignMod.SIGN_POST_ITEM);
+                VersionAdapter.INSTANCE.writeToItemStack(drop, tipSign.getData());
+                VersionAdapter.INSTANCE.setItemTooltipTitle(drop, tipSign.getData().title());
+                Block.popResource(level, pos, drop);
+            }
+        }
+        return super.playerWillDestroy(level, pos, state, player);
     }
 }

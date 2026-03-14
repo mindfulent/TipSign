@@ -34,6 +34,11 @@ import java.util.UUID;
 public class VersionAdapterImpl implements VersionAdapter {
 
     @Override
+    public void registerComponents() {
+        TipSignDataComponent.register();
+    }
+
+    @Override
     public void saveBlockEntityData(Object blockEntity, Object tagOrOutput) {
         if (!(blockEntity instanceof TipSignBlockEntity be) || !(tagOrOutput instanceof CompoundTag tag)) return;
         TipSignData data = be.getData();
@@ -89,18 +94,20 @@ public class VersionAdapterImpl implements VersionAdapter {
 
     @Override
     public void writeToItemStack(ItemStack stack, TipSignData data) {
-        // TODO: Phase 6 — DataComponentType for items
+        TipSignDataComponent.writeToStack(stack, data);
     }
 
     @Override
     public TipSignData readFromItemStack(ItemStack stack) {
-        // TODO: Phase 6 — DataComponentType for items
-        return null;
+        return TipSignDataComponent.readFromStack(stack);
     }
 
     @Override
     public void setItemTooltipTitle(ItemStack stack, String title) {
-        // TODO: Phase 6
+        if (title != null && !title.isEmpty()) {
+            stack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,
+                net.minecraft.network.chat.Component.literal(title));
+        }
     }
 
     @Override

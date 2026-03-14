@@ -2,6 +2,19 @@
 
 All notable changes to TipSign will be documented in this file.
 
+## [0.7.0] - 2026-03-14
+
+### Added
+- Custom DataComponentType (tipsign:sign_data) for item stack data persistence
+- Item data serialization: breaking serializes all data into dropped item, re-placing restores it
+- Item tooltip shows sign title via custom_name component
+- TipSignPermissions — owner check, op-level-2 admin
+- TipSignBlockEntityRenderer — renders title text on block face, rotated per facing
+- Shaped crafting recipe: Gold Nugget + Plank + Sticks
+- Loot table with copy_components for data preservation
+- Axe mineable tag
+- Owner-only break protection (configurable via ownerOnlyBreak)
+
 ## [0.6.0] - 2026-03-14
 
 ### Added

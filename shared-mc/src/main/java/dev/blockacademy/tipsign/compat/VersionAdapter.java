@@ -14,6 +14,9 @@ import java.util.ServiceLoader;
  */
 public interface VersionAdapter {
 
+    // --- Registration ---
+    void registerComponents();
+
     // --- Block Entity Serialization ---
     void saveBlockEntityData(Object blockEntity, Object tagOrOutput);
     void loadBlockEntityData(Object blockEntity, Object tagOrInput);

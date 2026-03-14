@@ -43,6 +43,9 @@ public class TipSignMod implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        // Register data components (must be before block/item registration)
+        VersionAdapter.INSTANCE.registerComponents();
+
         ResourceLocation blockId = ResourceLocation.fromNamespaceAndPath(MOD_ID, "sign_post");
 
         // Register block
