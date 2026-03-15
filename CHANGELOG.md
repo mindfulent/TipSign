@@ -2,6 +2,13 @@
 
 All notable changes to TipSign will be documented in this file.
 
+## [0.21.1] - 2026-03-14
+
+### Fixed
+- **Crash on startup (ClassNotFoundException: NightConfig)** — NightConfig `toml` and `core` JARs were not bundled via Fabric's jar-in-jar. Only worked when another mod happened to provide the classes. Added explicit `include` for both NightConfig dependencies in all 7 band build files.
+
+---
+
 ## [0.21.0] - 2026-03-14
 
 ### Fixed

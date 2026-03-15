@@ -20,8 +20,10 @@ dependencies {
 
     implementation project(":common")
 
-    // Bundle common as jar-in-jar
+    // Bundle common + NightConfig as jar-in-jar
     include project(":common")
+    include "com.electronwill.night-config:toml:${project.nightconfig_version}"
+    include "com.electronwill.night-config:core:${project.nightconfig_version}"
 }
 
 // Compile shared-mc sources directly in this project (against this band's MC version)
