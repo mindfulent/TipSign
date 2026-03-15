@@ -45,11 +45,13 @@ public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBl
         poseStack.pushPose();
 
         // Standing only (no wall support in Band A)
+        // Axis.YP rotates CCW (right-hand rule), blockstate "y" rotates CW,
+        // so EAST/WEST are swapped vs the blockstate values.
         float rotation = switch (facing) {
             case NORTH -> 0f;
-            case EAST -> 90f;
+            case EAST -> 270f;
             case SOUTH -> 180f;
-            case WEST -> 270f;
+            case WEST -> 90f;
             default -> 0f;
         };
         poseStack.translate(0.5, 0.646, 0.5);

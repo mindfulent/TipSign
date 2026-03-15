@@ -2,10 +2,17 @@
 
 All notable changes to TipSign will be documented in this file.
 
-## [0.20.1] - 2026-03-14
+## [0.20.3] - 2026-03-14
 
 ### Fixed
-- **Survival sign duplication bug** — Breaking a TipSign in survival mode dropped two copies: one from the manual `Block.popResource()` in `playerWillDestroy()` and one from the loot table. Removed the redundant manual drop; loot tables (`copy_components` / `copy_nbt`) already handle data-preserving drops correctly.
+- **East/West text on wrong side** — BER text was rendering on the opposite face of the block when placed facing east or west. Root cause: `Axis.YP.rotationDegrees()` rotates counterclockwise (right-hand rule) while blockstate `"y"` rotates clockwise. For 0°/180° (north/south) both directions produce identical results, but 90°/270° (east/west) are opposite. Swapped EAST↔WEST rotation values in all 4 BER files (shared-mc, Band A, Band F, Band G) for both standing and wall signs, plus the "Right-click me!" indicator.
+
+---
+
+## [0.20.2] - 2026-03-14
+
+### Fixed
+- **Survival sign duplication bug (take 2)** — Emptied all 7 loot tables (`pools: []`) and restored the manual `Block.popResource()` in `playerWillDestroy()` as the sole drop source. The loot table was producing a second (blank) item alongside the manual data-bearing drop. Now only the manual drop fires, guaranteeing exactly one sign with preserved data.
 
 ---
 

@@ -1,5 +1,6 @@
 package dev.blockacademy.tipsign.block;
 
+import dev.blockacademy.tipsign.TipSignMod;
 import dev.blockacademy.tipsign.TipSignPermissions;
 import dev.blockacademy.tipsign.common.TipSignConfig;
 import dev.blockacademy.tipsign.common.TipSignData;
@@ -189,7 +190,11 @@ public class TipSignBlock extends BaseEntityBlock {
                     return state;
                 }
 
-                // Loot table handles the drop (copy_components copies sign data)
+                // Manual drop — loot table is intentionally empty to prevent duplication
+                ItemStack drop = new ItemStack(TipSignMod.SIGN_POST_ITEM);
+                VersionAdapter.INSTANCE.writeToItemStack(drop, tipSign.getData());
+                VersionAdapter.INSTANCE.setItemTooltipTitle(drop, tipSign.getData().title());
+                Block.popResource(level, pos, drop);
             }
         }
         return super.playerWillDestroy(level, pos, state, player);

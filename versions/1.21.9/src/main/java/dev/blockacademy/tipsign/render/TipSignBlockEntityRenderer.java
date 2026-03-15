@@ -74,22 +74,26 @@ public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBl
         poseStack.pushPose();
 
         if (state.isWall) {
+            // Axis.YP rotates CCW (right-hand rule), blockstate "y" rotates CW,
+            // so EAST/WEST are swapped vs the blockstate values.
             float rotation = switch (state.facing) {
                 case SOUTH -> 0f;
-                case WEST -> 90f;
+                case WEST -> 270f;
                 case NORTH -> 180f;
-                case EAST -> 270f;
+                case EAST -> 90f;
                 default -> 0f;
             };
             poseStack.translate(0.5, 0.490, 0.5);
             poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
             poseStack.translate(0, 0, 0.436);
         } else {
+            // Axis.YP rotates CCW (right-hand rule), blockstate "y" rotates CW,
+            // so EAST/WEST are swapped vs the blockstate values.
             float rotation = switch (state.facing) {
                 case NORTH -> 0f;
-                case EAST -> 90f;
+                case EAST -> 270f;
                 case SOUTH -> 180f;
-                case WEST -> 270f;
+                case WEST -> 90f;
                 default -> 0f;
             };
             poseStack.translate(0.5, 0.646, 0.5);
@@ -132,17 +136,17 @@ public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBl
             if (state.isWall) {
                 rotation = switch (state.facing) {
                     case SOUTH -> 0f;
-                    case WEST -> 90f;
+                    case WEST -> 270f;
                     case NORTH -> 180f;
-                    case EAST -> 270f;
+                    case EAST -> 90f;
                     default -> 0f;
                 };
             } else {
                 rotation = switch (state.facing) {
                     case NORTH -> 0f;
-                    case EAST -> 90f;
+                    case EAST -> 270f;
                     case SOUTH -> 180f;
-                    case WEST -> 270f;
+                    case WEST -> 90f;
                     default -> 0f;
                 };
             }
