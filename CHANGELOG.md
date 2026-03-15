@@ -2,6 +2,20 @@
 
 All notable changes to TipSign will be documented in this file.
 
+## [0.21.0] - 2026-03-14
+
+### Fixed
+- **Sign duplication bug** — Root cause: `useWithoutItem` returned `SUCCESS` on the client for ALL right-clicks, which short-circuited the interaction pipeline and prevented `BlockItem.useOn()` from running. The item was never consumed on placement, so the player kept the sign in their inventory after placing it. Fix: return `PASS` when the player is holding a TipSign item, allowing the `BlockItem` placement pipeline to consume the item normally. Also removed the `playerDestroy` no-op workaround (unnecessary with empty loot tables).
+
+---
+
+## [0.20.4] - 2026-03-14
+
+### Fixed
+- **Survival sign duplication bug (take 3)** — Override `playerDestroy()` as a no-op to completely block the `Block.dropResources()` → loot table drop path. Combined with the manual `popResource` in `playerWillDestroy()` and empty loot tables, this eliminates all possible duplicate drop sources. The sign is now dropped exclusively by our code in `playerWillDestroy`, before the block is removed.
+
+---
+
 ## [0.20.3] - 2026-03-14
 
 ### Fixed

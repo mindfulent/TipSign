@@ -155,6 +155,11 @@ public class TipSignBlock extends BaseEntityBlock {
     @SuppressWarnings("deprecation")
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        // If the player is holding a TipSign item, let BlockItem handle placement
+        if (player.getMainHandItem().getItem() == TipSignMod.SIGN_POST_ITEM) {
+            return InteractionResult.PASS;
+        }
+
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
