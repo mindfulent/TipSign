@@ -11,4 +11,7 @@ public class TipSignRenderState extends BlockEntityRenderState {
     public String title = "";
     public Direction facing = Direction.SOUTH;
     public boolean isWall = false;
+    public long gameTime = 0;
+    public float partialTick = 0;
+    public boolean isTargeted = false;
 }

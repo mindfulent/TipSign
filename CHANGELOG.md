@@ -2,6 +2,35 @@
 
 All notable changes to TipSign will be documented in this file.
 
+## [0.20.1] - 2026-03-14
+
+### Fixed
+- **Survival sign duplication bug** — Breaking a TipSign in survival mode dropped two copies: one from the manual `Block.popResource()` in `playerWillDestroy()` and one from the loot table. Removed the redundant manual drop; loot tables (`copy_components` / `copy_nbt`) already handle data-preserving drops correctly.
+
+---
+
+## [0.20.0] - 2026-03-14
+
+### Improved
+- **Tight standing sign outline** — Replaced the near-full-cube VoxelShape with a compound shape (`Shapes.or()`) matching the actual model geometry (post + cap + board). The block targeting outline now hugs the sign instead of rendering as a large black box. Per-facing board shapes rotate correctly for N/S/E/W. Wall sign shapes unchanged.
+- **"Right-click me!" indicator** — Pulsing red text with ▼ arrow floats above the sign board only when the player's crosshair targets the block. Self-illuminating (fullBright), sign-facing rotation, smooth alpha pulse (~2s cycle). Supports standing and wall signs across all 7 version bands.
+
+---
+
+## [0.19.0] - 2026-03-14
+
+### Fixed
+- **Author Screen fits small windows** — Panel height is now responsive instead of fixed at 290px. At Minecraft's default 854×480 window (GUI scale 2), all elements (title, body, nav, links, theme, save/cancel/delete) are now visible. Spacing compacts automatically when the window is small, and expands to full comfort when space allows.
+
+---
+
+## [0.18.0] - 2026-03-14
+
+### Added
+- **"Right-click me!" indicator** — Animated gold text with bobbing ▼ arrow renders above TipSign blocks, making interactivity obvious to new players. Billboard-rendered to always face the camera. Supports both standing and wall-mounted signs across all 7 version bands.
+
+---
+
 ## [0.17.0] - 2026-03-14
 
 ### Fixed

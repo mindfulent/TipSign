@@ -20,7 +20,7 @@ import java.util.List;
 public class TipSignAuthorScreen extends Screen {
 
     private static final int PANEL_WIDTH = 320;
-    private static final int PANEL_HEIGHT = 290;
+    private static final int MAX_PANEL_HEIGHT = 290;
     private static final int LABEL_COLOR = 0xFFE8D8C8;
     private static final int ERROR_COLOR = 0xFFFF6666;
 
@@ -40,7 +40,8 @@ public class TipSignAuthorScreen extends Screen {
     private String validationError = null;
     private boolean deleteConfirmPending = false;
 
-    private int panelLeft, panelTop;
+    private int panelLeft, panelTop, panelHeight;
+    private boolean compact;
 
     public TipSignAuthorScreen(TipSignData data, BlockPos pos) {
         super(Component.translatable("tipsign.screen.author.title"));
@@ -55,12 +56,23 @@ public class TipSignAuthorScreen extends Screen {
 
     @Override
     protected void init() {
+        panelHeight = Math.min(MAX_PANEL_HEIGHT, this.height - 10);
+        compact = panelHeight < MAX_PANEL_HEIGHT;
         panelLeft = (this.width - PANEL_WIDTH) / 2;
-        panelTop = (this.height - PANEL_HEIGHT) / 2;
+        panelTop = (this.height - panelHeight) / 2;
 
         int fieldLeft = panelLeft + 70;
         int fieldWidth = PANEL_WIDTH - 80;
-        int y = panelTop + 12;
+
+        int topPad = compact ? 8 : 12;
+        int titleGap = compact ? 20 : 24;
+        int bodyGap = compact ? 2 : 4;
+        int navGap = compact ? 22 : 28;
+        int kofiGap = compact ? 18 : 22;
+        int patreonGap = compact ? 20 : 24;
+        int themeGap = compact ? 22 : 26;
+
+        int y = panelTop + topPad;
 
         // Title field
         this.titleField = new EditBox(this.font, fieldLeft, y, fieldWidth, 16, Component.literal("Title"));
@@ -68,7 +80,7 @@ public class TipSignAuthorScreen extends Screen {
         this.titleField.setValue(editTitle);
         this.titleField.setResponder(s -> editTitle = s);
         this.addRenderableWidget(titleField);
-        y += 24;
+        y += titleGap;
 
         // Body text area (3 lines tall)
         int bodyHeight = 40;
@@ -83,7 +95,7 @@ public class TipSignAuthorScreen extends Screen {
             }
         });
         this.addRenderableWidget(bodyField);
-        y += bodyHeight + 4;
+        y += bodyHeight + bodyGap;
 
         // Page navigation
         int navY = y;
@@ -118,7 +130,7 @@ public class TipSignAuthorScreen extends Screen {
             }
         }).bounds(panelLeft + PANEL_WIDTH / 2 + 2, navY, 48, 20).build());
 
-        y += 28;
+        y += navGap;
 
         // Ko-fi URL field
         this.kofiField = new EditBox(this.font, fieldLeft, y, fieldWidth, 16, Component.literal("Ko-fi"));
@@ -126,7 +138,7 @@ public class TipSignAuthorScreen extends Screen {
         this.kofiField.setValue(editKofi);
         this.kofiField.setResponder(s -> editKofi = s);
         this.addRenderableWidget(kofiField);
-        y += 22;
+        y += kofiGap;
 
         // Patreon URL field
         this.patreonField = new EditBox(this.font, fieldLeft, y, fieldWidth, 16, Component.literal("Patreon"));
@@ -134,7 +146,7 @@ public class TipSignAuthorScreen extends Screen {
         this.patreonField.setValue(editPatreon);
         this.patreonField.setResponder(s -> editPatreon = s);
         this.addRenderableWidget(patreonField);
-        y += 24;
+        y += patreonGap;
 
         // Background color cycle button
         this.addRenderableWidget(Button.builder(
@@ -145,10 +157,10 @@ public class TipSignAuthorScreen extends Screen {
             }
         ).bounds(panelLeft + 10, y, 120, 20).build());
 
-        y += 26;
+        y += themeGap;
 
         // Save / Cancel / Delete buttons
-        int btnY = panelTop + PANEL_HEIGHT - 28;
+        int btnY = panelTop + panelHeight - 28;
         this.addRenderableWidget(Button.builder(Component.translatable("tipsign.screen.author.save"), btn -> {
             save();
         }).bounds(panelLeft + 10, btnY, 80, 20).build());
@@ -244,35 +256,44 @@ public class TipSignAuthorScreen extends Screen {
         int bgColor = TipSignData.bgColor(editBgColorIndex);
         int borderColor = TipSignData.borderColor(editBgColorIndex);
 
-        graphics.fill(panelLeft - 2, panelTop - 2, panelLeft + PANEL_WIDTH + 2, panelTop + PANEL_HEIGHT + 2, borderColor);
-        graphics.fill(panelLeft, panelTop, panelLeft + PANEL_WIDTH, panelTop + PANEL_HEIGHT, bgColor);
+        graphics.fill(panelLeft - 2, panelTop - 2, panelLeft + PANEL_WIDTH + 2, panelTop + panelHeight + 2, borderColor);
+        graphics.fill(panelLeft, panelTop, panelLeft + PANEL_WIDTH, panelTop + panelHeight, bgColor);
 
-        int y = panelTop + 15;
+        int topPad = compact ? 8 : 12;
+        int titleGap = compact ? 20 : 24;
+        int bodyGap = compact ? 2 : 4;
+        int navGap = compact ? 22 : 28;
+        int kofiGap = compact ? 18 : 22;
+        int patreonGap = compact ? 20 : 24;
+        int themeGap = compact ? 22 : 26;
+
+        int y = panelTop + topPad + 3; // +3 to vertically center label with field
+
         graphics.drawString(this.font, "Title:", panelLeft + 12, y, LABEL_COLOR);
-        y += 24;
+        y += titleGap;
 
         graphics.drawString(this.font, "Page " + (currentPage + 1) + "/" + pages.size(),
             panelLeft + 12, y - 2, 0xFFAA9988);
-        y += 40 + 4 + 28;
+        y += 40 + bodyGap + navGap;
 
         graphics.drawString(this.font, "Ko-fi:", panelLeft + 12, y, LABEL_COLOR);
-        y += 22;
+        y += kofiGap;
         graphics.drawString(this.font, "Patreon:", panelLeft + 12, y, LABEL_COLOR);
-        y += 24;
+        y += patreonGap;
 
-        y += 22;
+        y += themeGap;
         graphics.drawString(this.font, "\u00a7oLinks: [text](url)  \u00a7oBold: \u00a7l**text**",
             panelLeft + 12, y, 0xFF888877);
 
         if (validationError != null) {
             graphics.drawCenteredString(this.font, validationError,
-                panelLeft + PANEL_WIDTH / 2, panelTop + PANEL_HEIGHT - 44, ERROR_COLOR);
+                panelLeft + PANEL_WIDTH / 2, panelTop + panelHeight - 44, ERROR_COLOR);
         }
 
         if (deleteConfirmPending) {
             List<FormattedCharSequence> confirmLines = this.font.split(
                 Component.translatable("tipsign.screen.author.delete_confirm"), PANEL_WIDTH - 20);
-            int confirmY = panelTop + PANEL_HEIGHT - 44 - (confirmLines.size() - 1) * 10;
+            int confirmY = panelTop + panelHeight - 44 - (confirmLines.size() - 1) * 10;
             for (FormattedCharSequence line : confirmLines) {
                 graphics.drawCenteredString(this.font, line,
                     panelLeft + PANEL_WIDTH / 2, confirmY, ERROR_COLOR);

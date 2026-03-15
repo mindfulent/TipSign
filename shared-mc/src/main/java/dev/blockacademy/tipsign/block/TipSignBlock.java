@@ -1,6 +1,5 @@
 package dev.blockacademy.tipsign.block;
 
-import dev.blockacademy.tipsign.TipSignMod;
 import dev.blockacademy.tipsign.TipSignPermissions;
 import dev.blockacademy.tipsign.common.TipSignConfig;
 import dev.blockacademy.tipsign.common.TipSignData;
@@ -29,6 +28,7 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,8 +38,21 @@ public class TipSignBlock extends BaseEntityBlock {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty WALL = BooleanProperty.create("wall");
 
-    // Standing sign collision shape
-    private static final VoxelShape SHAPE_STANDING = Block.box(1, 0, 1, 15, 16, 15);
+    // Standing sign sub-shapes (from model JSON coordinates)
+    private static final VoxelShape POST = Block.box(7, 0, 7, 9, 16, 9);
+    private static final VoxelShape CAP  = Block.box(6, 14, 6, 10, 16, 10);
+
+    // Board per facing (14x7x1, rotated around block center)
+    private static final VoxelShape BOARD_NORTH = Block.box(1, 7, 6, 15, 14, 7);
+    private static final VoxelShape BOARD_SOUTH = Block.box(1, 7, 9, 15, 14, 10);
+    private static final VoxelShape BOARD_EAST  = Block.box(9, 7, 1, 10, 14, 15);
+    private static final VoxelShape BOARD_WEST  = Block.box(6, 7, 1, 7, 14, 15);
+
+    // Compound standing shapes
+    private static final VoxelShape STANDING_NORTH = Shapes.or(POST, CAP, BOARD_NORTH);
+    private static final VoxelShape STANDING_SOUTH = Shapes.or(POST, CAP, BOARD_SOUTH);
+    private static final VoxelShape STANDING_EAST  = Shapes.or(POST, CAP, BOARD_EAST);
+    private static final VoxelShape STANDING_WEST  = Shapes.or(POST, CAP, BOARD_WEST);
 
     // Wall-mounted shapes (thin board flush against each wall)
     private static final VoxelShape WALL_NORTH = Block.box(1, 4, 15, 15, 12, 16);
@@ -91,10 +104,16 @@ public class TipSignBlock extends BaseEntityBlock {
                 case SOUTH -> WALL_SOUTH;
                 case EAST -> WALL_EAST;
                 case WEST -> WALL_WEST;
-                default -> SHAPE_STANDING;
+                default -> STANDING_NORTH;
             };
         }
-        return SHAPE_STANDING;
+        return switch (state.getValue(FACING)) {
+            case NORTH -> STANDING_NORTH;
+            case SOUTH -> STANDING_SOUTH;
+            case EAST  -> STANDING_EAST;
+            case WEST  -> STANDING_WEST;
+            default    -> STANDING_NORTH;
+        };
     }
 
     @Override
@@ -170,11 +189,7 @@ public class TipSignBlock extends BaseEntityBlock {
                     return state;
                 }
 
-                // Serialize data to dropped item
-                ItemStack drop = new ItemStack(TipSignMod.SIGN_POST_ITEM);
-                VersionAdapter.INSTANCE.writeToItemStack(drop, tipSign.getData());
-                VersionAdapter.INSTANCE.setItemTooltipTitle(drop, tipSign.getData().title());
-                Block.popResource(level, pos, drop);
+                // Loot table handles the drop (copy_components copies sign data)
             }
         }
         return super.playerWillDestroy(level, pos, state, player);

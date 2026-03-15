@@ -5,6 +5,7 @@ import com.mojang.math.Axis;
 import dev.blockacademy.tipsign.block.TipSignBlock;
 import dev.blockacademy.tipsign.block.TipSignBlockEntity;
 import dev.blockacademy.tipsign.common.TipSignData;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
@@ -15,6 +16,8 @@ import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
@@ -56,6 +59,11 @@ public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBl
         state.title = (data != null && data.title() != null) ? data.title() : TipSignData.DEFAULT_TITLE;
         state.facing = be.getBlockState().getValue(TipSignBlock.FACING);
         state.isWall = be.getBlockState().getValue(TipSignBlock.WALL);
+        state.gameTime = be.getLevel() != null ? be.getLevel().getGameTime() : 0;
+        state.partialTick = partialTick;
+        HitResult hit = Minecraft.getInstance().hitResult;
+        state.isTargeted = hit instanceof BlockHitResult blockHit
+                && blockHit.getBlockPos().equals(be.getBlockPos());
     }
 
     @Override
@@ -109,5 +117,59 @@ public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBl
         }
 
         poseStack.popPose();
+
+        // Render "Right-click me!" indicator when crosshair targets this sign
+        if (state.isTargeted) {
+            float pulse = (float) (Math.sin((state.gameTime + state.partialTick) * 0.15) * 0.5 + 0.5);
+            int alpha = 160 + (int) (pulse * 95); // 160–255: always readable
+            int goldColor = (alpha << 24) | 0xFF4444;
+            int redColor = (alpha << 24) | 0xFF4444;
+            int fullBright = 0xF000F0;
+
+            float indicatorY = state.isWall ? 0.85f : 1.25f;
+            float zOffset = state.isWall ? 0.436f : -0.132f;
+            float rotation;
+            if (state.isWall) {
+                rotation = switch (state.facing) {
+                    case SOUTH -> 0f;
+                    case WEST -> 90f;
+                    case NORTH -> 180f;
+                    case EAST -> 270f;
+                    default -> 0f;
+                };
+            } else {
+                rotation = switch (state.facing) {
+                    case NORTH -> 0f;
+                    case EAST -> 90f;
+                    case SOUTH -> 180f;
+                    case WEST -> 270f;
+                    default -> 0f;
+                };
+            }
+
+            poseStack.pushPose();
+            poseStack.translate(0.5, indicatorY, 0.5);
+            poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
+            poseStack.translate(0, 0, zOffset);
+            poseStack.scale(-scale, -scale, scale);
+
+            String text = "Right-click me!";
+            int textWidth = this.font.width(text);
+            List<FormattedCharSequence> textLines = this.font.split(FormattedText.of(text), Integer.MAX_VALUE);
+            if (!textLines.isEmpty()) {
+                collector.submitText(poseStack, -textWidth / 2f, 0, textLines.get(0), false,
+                        Font.DisplayMode.NORMAL, fullBright, goldColor, 0, 0);
+            }
+
+            String arrow = "\u25BC";
+            int arrowWidth = this.font.width(arrow);
+            List<FormattedCharSequence> arrowLines = this.font.split(FormattedText.of(arrow), Integer.MAX_VALUE);
+            if (!arrowLines.isEmpty()) {
+                collector.submitText(poseStack, -arrowWidth / 2f, 10, arrowLines.get(0), false,
+                        Font.DisplayMode.NORMAL, fullBright, redColor, 0, 0);
+            }
+
+            poseStack.popPose();
+        }
     }
 }
