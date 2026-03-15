@@ -67,6 +67,15 @@ Dependency flow: `common` ← `shared-mc` ← `versions/*`
 
 Each version band provides a `VersionAdapterImpl` loaded via `ServiceLoader` that handles all version-specific API calls (serialization, networking, item data, identifiers).
 
+**Band-specific source overrides:** Bands A, F, and G have their own copies of shared-mc classes where API signatures changed. Bands F/G use a Gradle Copy task to filter shared-mc sources into `build/generated/shared-mc/java/`, excluding overridden files. Band A has a complete standalone copy of all shared-mc Java sources.
+
+| Band | Overrides |
+|------|-----------|
+| A | All shared-mc classes (complete standalone copy) |
+| B–E | None (compile shared-mc sources directly) |
+| F | TipSignBlockEntity, TipSignBlockEntityRenderer (ValueOutput/ValueInput, Vec3 render param) |
+| G | TipSignBlock, TipSignBlockEntity, TipSignBlockEntityRenderer (authlib 7.x, submit-based BER) |
+
 ### Key Abstractions
 
 - **VersionAdapter** — central interface isolating all version-specific Minecraft API calls. Each band implements this.
@@ -82,7 +91,8 @@ Each version band provides a `VersionAdapterImpl` loaded via `ServiceLoader` tha
 | Item data | `BlockEntityTag` NBT | `DataComponentType` | `DataComponentType` |
 | Networking | `FriendlyByteBuf` | `CustomPayload` + `PacketCodec` | same |
 | Identifiers | `new ResourceLocation(...)` | `ResourceLocation.fromNamespaceAndPath(...)` | same |
-| BER render | `render(be, ...)` with `MultiBufferSource` | `render(state, ...)` with `MultiBufferSource` (1.21.2+: EntityRenderState) | `render(state, ...)` with `OrderedRenderCommandQueue` (1.21.9+) |
+| BER render | `render(be, ...)` 6 params | `render(be, ...)` 6 params (B–E) / 7 params +Vec3 (F) | `submit(state, PoseStack, SubmitNodeCollector, CameraRenderState)` (G) |
+| authlib | `GameProfile.getName()` | `GameProfile.getName()` | `GameProfile.name()` (G, authlib 7.x record) |
 
 ### Mappings
 

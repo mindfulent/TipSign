@@ -15,7 +15,5 @@ include "versions:1.20.5"
 include "versions:1.21"
 include "versions:1.21.2"
 include "versions:1.21.4"
-// Band F and G excluded — require Fabric Loom 1.10+ (their Fabric API targets newer Loom).
-// Re-enable when upgrading Loom or when these bands get full implementations.
-// include "versions:1.21.6"
-// include "versions:1.21.9"
+include "versions:1.21.6"
+include "versions:1.21.9"

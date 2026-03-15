@@ -2,12 +2,9 @@ plugins {
     id "fabric-loom"
 }
 
-// TODO: Band G (1.21.9+) uses ValueOutput/ValueInput serialization (like Band F) plus
-// queue-based BER (OrderedRenderCommandQueue instead of MultiBufferSource).
-// When actually compiling against 1.21.9, shared-mc's TipSignBlockEntity and
-// TipSignBlockEntityRenderer will not match the 1.21.9 signatures. This band will need
-// its own copies of shared-mc classes (like Band A) with adapted serialization and rendering.
-// For now, the shared-mc source inclusion is set up but will fail to compile against real 1.21.9.
+// Band G (MC 1.21.9–1.21.11): WriteView/ReadView serialization (like Band F)
+// + queue-based BER (OrderedRenderCommandQueue instead of MultiBufferSource).
+// TipSignBlockEntity and TipSignBlockEntityRenderer have band-specific copies.
 
 version = ""
 
@@ -31,8 +28,19 @@ dependencies {
     include project(":common")
 }
 
-// Compile shared-mc sources directly in this project (against this band's MC version)
-sourceSets.main.java.srcDirs += project(":shared-mc").file("src/main/java")
+// Copy shared-mc sources (minus band-specific overrides) into build dir,
+// then compile alongside band-specific sources in src/main/java.
+def copySharedMc = tasks.register("copySharedMcSources", Copy) {
+    from project(":shared-mc").file("src/main/java")
+    into layout.buildDirectory.dir("generated/shared-mc/java")
+    exclude "dev/blockacademy/tipsign/TipSignModClient.java"
+    exclude "dev/blockacademy/tipsign/block/TipSignBlock.java"
+    exclude "dev/blockacademy/tipsign/block/TipSignBlockEntity.java"
+    exclude "dev/blockacademy/tipsign/render/TipSignBlockEntityRenderer.java"
+}
+sourceSets.main.java.srcDirs += layout.buildDirectory.dir("generated/shared-mc/java")
+tasks.named("compileJava").configure { dependsOn copySharedMc }
+tasks.named("sourcesJar").configure { dependsOn copySharedMc }
 sourceSets.main.resources.srcDirs += project(":shared-mc").file("src/main/resources")
 
 processResources {

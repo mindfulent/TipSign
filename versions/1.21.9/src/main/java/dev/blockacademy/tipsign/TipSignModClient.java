@@ -1,20 +1,24 @@
 package dev.blockacademy.tipsign;
 
-// import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.platform.InputConstants;
 import dev.blockacademy.tipsign.block.TipSignBlockEntity;
 import dev.blockacademy.tipsign.common.TipSignData;
 import dev.blockacademy.tipsign.compat.VersionAdapter;
 import dev.blockacademy.tipsign.render.TipSignBlockEntityRenderer;
 import net.fabricmc.api.ClientModInitializer;
-// import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-// import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
-// import net.minecraft.client.KeyMapping;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
-// import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntity;
-// import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFW;
 
+/**
+ * Band G (MC 1.21.9–1.21.11) client initializer.
+ * KeyMapping constructor takes KeyMapping.Category instead of String in 1.21.9+.
+ */
 public class TipSignModClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
@@ -31,17 +35,17 @@ public class TipSignModClient implements ClientModInitializer {
             return 0xFFFFFFFF;
         }, TipSignMod.SIGN_POST_BLOCK);
 
-        // === DEBUG keybinds — uncomment to re-enable BER position tuning ===
-        // Requires uncommenting debug fields in TipSignBlockEntityRenderer too.
-        /*
+        // === DEBUG keybinds (remove after BER calibration) ===
+        KeyMapping.Category debugCategory = KeyMapping.Category.register(
+            VersionAdapter.INSTANCE.createId("tipsign", "debug"));
         KeyMapping debugUp = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-                "TipSign +", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_KP_ADD, "TipSign Debug"));
+                "TipSign +", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_KP_ADD, debugCategory));
         KeyMapping debugDown = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-                "TipSign -", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_KP_SUBTRACT, "TipSign Debug"));
+                "TipSign -", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_KP_SUBTRACT, debugCategory));
         KeyMapping debugSwitch = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-                "TipSign Mode", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_KP_MULTIPLY, "TipSign Debug"));
+                "TipSign Mode", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_KP_MULTIPLY, debugCategory));
         KeyMapping debugFlip = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-                "TipSign Rot+90", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_KP_DIVIDE, "TipSign Debug"));
+                "TipSign Rot+90", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_KP_DIVIDE, debugCategory));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player == null) return;
@@ -70,10 +74,8 @@ public class TipSignModClient implements ClientModInitializer {
                 printDebug(client.player);
             }
         });
-        */
     }
 
-    /*
     private static void adjustDebug(float delta) {
         switch (TipSignBlockEntityRenderer.debugMode) {
             case 0 -> TipSignBlockEntityRenderer.debugRotOffset += delta * 1000;
@@ -97,5 +99,4 @@ public class TipSignModClient implements ClientModInitializer {
                 TipSignBlockEntityRenderer.debugYWall);
         player.displayClientMessage(Component.literal(msg), true);
     }
-    */
 }

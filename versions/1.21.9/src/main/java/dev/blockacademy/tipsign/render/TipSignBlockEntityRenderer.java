@@ -6,17 +6,24 @@ import dev.blockacademy.tipsign.block.TipSignBlock;
 import dev.blockacademy.tipsign.block.TipSignBlockEntity;
 import dev.blockacademy.tipsign.common.TipSignData;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
-public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBlockEntity> {
+/**
+ * Band G (MC 1.21.9–1.21.11) TipSignBlockEntityRenderer.
+ * Uses submit-based rendering with TipSignRenderState.
+ */
+public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBlockEntity, TipSignRenderState> {
 
     private static final int TEXT_COLOR = 0xFF1A1008; // Dark brown (near-black)
     private static final int MAX_TEXT_WIDTH = 65; // Font-units; board is ~73 at scale 0.012
@@ -33,27 +40,33 @@ public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBl
     private final Font font;
 
     public TipSignBlockEntityRenderer(BlockEntityRendererProvider.Context ctx) {
-        this.font = ctx.getFont();
+        this.font = ctx.font();
     }
 
     @Override
-    public void render(TipSignBlockEntity be, float partialTick, PoseStack poseStack,
-                       MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+    public TipSignRenderState createRenderState() {
+        return new TipSignRenderState();
+    }
+
+    @Override
+    public void extractRenderState(TipSignBlockEntity be, TipSignRenderState state, float partialTick,
+                                   Vec3 cameraPos, ModelFeatureRenderer.CrumblingOverlay crumbling) {
+        BlockEntityRenderState.extractBase(be, state, crumbling);
         TipSignData data = be.getData();
-        if (data == null) return;
+        state.title = (data != null && data.title() != null) ? data.title() : TipSignData.DEFAULT_TITLE;
+        state.facing = be.getBlockState().getValue(TipSignBlock.FACING);
+        state.isWall = be.getBlockState().getValue(TipSignBlock.WALL);
+    }
 
-        String title = data.title() != null ? data.title() : TipSignData.DEFAULT_TITLE;
-        if (title.isEmpty()) return;
-
-        BlockState state = be.getBlockState();
-        Direction facing = state.getValue(TipSignBlock.FACING);
-        boolean isWall = state.getValue(TipSignBlock.WALL);
+    @Override
+    public void submit(TipSignRenderState state, PoseStack poseStack,
+                       SubmitNodeCollector collector, CameraRenderState cameraRenderState) {
+        if (state.title.isEmpty()) return;
 
         poseStack.pushPose();
 
-        if (isWall) {
-            // Wall: text readable from +Z after scale(-s,-s,s), board faces outward
-            float rotation = switch (facing) {
+        if (state.isWall) {
+            float rotation = switch (state.facing) {
                 case SOUTH -> 0f;
                 case WEST -> 90f;
                 case NORTH -> 180f;
@@ -64,8 +77,7 @@ public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBl
             poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
             poseStack.translate(0, 0, 0.436);
         } else {
-            // Standing: blockstate-matching rotation (board front at z=6 in model)
-            float rotation = switch (facing) {
+            float rotation = switch (state.facing) {
                 case NORTH -> 0f;
                 case EAST -> 90f;
                 case SOUTH -> 180f;
@@ -81,7 +93,7 @@ public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBl
         poseStack.scale(-scale, -scale, scale);
 
         // Word-wrap the title to fit within the sign board
-        List<FormattedCharSequence> lines = this.font.split(FormattedText.of(title), MAX_TEXT_WIDTH);
+        List<FormattedCharSequence> lines = this.font.split(FormattedText.of(state.title), MAX_TEXT_WIDTH);
         float totalHeight = lines.size() * LINE_HEIGHT;
         float startY = -totalHeight / 2f;
 
@@ -91,11 +103,9 @@ public class TipSignBlockEntityRenderer implements BlockEntityRenderer<TipSignBl
             float x = -lineWidth / 2f;
             float y = startY + i * LINE_HEIGHT;
 
-            this.font.drawInBatch(
-                line, x, y, TEXT_COLOR,
-                false, poseStack.last().pose(), bufferSource,
-                Font.DisplayMode.NORMAL, 0, packedLight
-            );
+            // submitText(PoseStack, x, y, text, shadow, displayMode, light, color, bgColor, outlineColor)
+            collector.submitText(poseStack, x, y, line, false,
+                Font.DisplayMode.NORMAL, state.lightCoords, TEXT_COLOR, 0, 0);
         }
 
         poseStack.popPose();

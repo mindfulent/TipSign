@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "fabric-loom" version "1.7-SNAPSHOT" apply false
+    id "fabric-loom" version "1.11-SNAPSHOT" apply false
 }
 
 allprojects {
@@ -36,16 +36,32 @@ project(":common") {
     }
 }
 
-// buildAll task: builds all version JARs
+// buildAll task: builds all version JARs and collects them into build/release/
 tasks.register("buildAll") {
     group = "build"
-    description = "Builds all version band JARs"
+    description = "Builds all version band JARs and collects into build/release/"
     dependsOn ":versions:1.20.1:build"   // Band A: MC 1.20.1–1.20.4
     dependsOn ":versions:1.20.5:build"   // Band B: MC 1.20.5–1.20.6
     dependsOn ":versions:1.21:build"     // Band C: MC 1.21–1.21.1
     dependsOn ":versions:1.21.2:build"   // Band D: MC 1.21.2–1.21.3
     dependsOn ":versions:1.21.4:build"   // Band E: MC 1.21.4–1.21.5
-    // Band F (1.21.6) and G (1.21.9) excluded — require Loom 1.10+ and adapted shared classes
-    // dependsOn ":versions:1.21.6:build"   // Band F: MC 1.21.6–1.21.8
-    // dependsOn ":versions:1.21.9:build"   // Band G: MC 1.21.9–1.21.11
+    dependsOn ":versions:1.21.6:build"   // Band F: MC 1.21.6–1.21.8
+    dependsOn ":versions:1.21.9:build"   // Band G: MC 1.21.9–1.21.11
+
+    doLast {
+        def releaseDir = layout.buildDirectory.dir("release").get().asFile
+        releaseDir.deleteDir()
+        releaseDir.mkdirs()
+
+        def bands = ["1.20.1", "1.20.5", "1.21", "1.21.2", "1.21.4", "1.21.6", "1.21.9"]
+        bands.each { band ->
+            def libsDir = project(":versions:${band}").layout.buildDirectory.dir("libs").get().asFile
+            libsDir.listFiles()?.each { jar ->
+                if (jar.name.endsWith(".jar") && !jar.name.contains("-dev") && !jar.name.contains("-sources")) {
+                    java.nio.file.Files.copy(jar.toPath(), new File(releaseDir, jar.name).toPath())
+                }
+            }
+        }
+        println "Collected ${releaseDir.listFiles()?.length ?: 0} JARs in ${releaseDir.path}"
+    }
 }

@@ -2,6 +2,27 @@
 
 All notable changes to TipSign will be documented in this file.
 
+## [0.17.0] - 2026-03-14
+
+### Fixed
+- **BER text position and orientation** — Text was floating far from the board and facing wrong directions. Empirically calibrated via in-game debug keybinds: standing signs use blockstate-matching rotation with Z=-0.132/Y=0.646, wall signs use +180° rotation with Z=0.436/Y=0.490. Standing and wall signs now use separate rotation mappings.
+
+---
+
+## [0.16.0] - 2026-03-14
+
+### Added
+- **Band F (MC 1.21.6–1.21.8)** — Full version band with ValueOutput/ValueInput serialization. BER adapted for new Vec3 render parameter. Builds produce `tipsign-0.16.0+mc1.21.6.jar`.
+- **Band G (MC 1.21.9–1.21.11)** — Full version band with submit-based BER (SubmitNodeCollector + TipSignRenderState), ValueOutput/ValueInput serialization, and authlib 7.x GameProfile record compatibility. Builds produce `tipsign-0.16.0+mc1.21.9.jar`.
+
+### Changed
+- **7 JARs** — `buildAll` now produces 7 version band JARs covering all 18 MC versions (1.20.1–1.21.11), up from 5 (1.20.1–1.21.5).
+- **Gradle upgraded to 8.14.1** (was 8.10.2) — required for Loom 1.11 and MC 1.21.9+ builds.
+- **Fabric Loom upgraded to 1.11-SNAPSHOT** (was 1.7-SNAPSHOT) — backwards-compatible with all existing bands.
+- Band-specific source override pattern uses Gradle Copy tasks to filter shared-mc sources into build directory, avoiding Gradle exclude conflicts across source directories.
+
+---
+
 ## [0.15.0] - 2026-03-14
 
 ### Fixed

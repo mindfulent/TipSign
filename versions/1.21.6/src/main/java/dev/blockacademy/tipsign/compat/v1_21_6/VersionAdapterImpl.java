@@ -15,8 +15,10 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -30,11 +32,7 @@ import java.util.UUID;
 
 /**
  * Band F (MC 1.21.6–1.21.8) version adapter implementation.
- *
- * TODO: 1.21.6 introduces ValueOutput/ValueInput serialization for block entities instead of
- * CompoundTag. The saveBlockEntityData/loadBlockEntityData methods below still use CompoundTag
- * and will need to be adapted to ValueOutput/ValueInput when this band is actually compiled
- * against MC 1.21.6. The shared-mc TipSignBlockEntity will also need a band-specific copy.
+ * Uses ValueOutput/ValueInput for block entity serialization (replaces CompoundTag).
  */
 public class VersionAdapterImpl implements VersionAdapter {
 
@@ -45,62 +43,112 @@ public class VersionAdapterImpl implements VersionAdapter {
 
     @Override
     public void saveBlockEntityData(Object blockEntity, Object tagOrOutput) {
-        // TODO: In 1.21.6+, tagOrOutput will be a ValueOutput, not CompoundTag.
-        // This implementation assumes CompoundTag and must be adapted for ValueOutput.
-        if (!(blockEntity instanceof TipSignBlockEntity be) || !(tagOrOutput instanceof CompoundTag tag)) return;
+        if (!(blockEntity instanceof TipSignBlockEntity be)) return;
         TipSignData data = be.getData();
         if (data == null) return;
 
-        tag.putString("Id", data.id());
-        tag.putString("Title", data.title() != null ? data.title() : TipSignData.DEFAULT_TITLE);
+        if (tagOrOutput instanceof ValueOutput view) {
+            view.putString("Id", data.id());
+            view.putString("Title", data.title() != null ? data.title() : TipSignData.DEFAULT_TITLE);
 
-        ListTag pages = new ListTag();
-        for (String page : data.pages()) {
-            pages.add(StringTag.valueOf(page));
+            // Store pages as indexed strings (WriteView has no ListTag equivalent)
+            view.putInt("PageCount", data.pages().size());
+            for (int i = 0; i < data.pages().size(); i++) {
+                view.putString("Page" + i, data.pages().get(i));
+            }
+
+            if (data.kofiUrl() != null) view.putString("KofiUrl", data.kofiUrl());
+            if (data.patreonUrl() != null) view.putString("PatreonUrl", data.patreonUrl());
+
+            if (data.ownerUuid() != null) view.store("OwnerUuid", net.minecraft.core.UUIDUtil.CODEC, data.ownerUuid());
+            if (data.ownerUsername() != null) view.putString("OwnerUsername", data.ownerUsername());
+
+            if (data.placedAt() != null) view.putString("PlacedAt", data.placedAt().toString());
+            if (data.lastEditedAt() != null) view.putString("LastEditedAt", data.lastEditedAt().toString());
+            view.putInt("BgColorIndex", data.bgColorIndex());
+        } else if (tagOrOutput instanceof CompoundTag tag) {
+            // Fallback for CompoundTag (e.g., getUpdateTag still uses CompoundTag)
+            tag.putString("Id", data.id());
+            tag.putString("Title", data.title() != null ? data.title() : TipSignData.DEFAULT_TITLE);
+
+            ListTag pages = new ListTag();
+            for (String page : data.pages()) {
+                pages.add(StringTag.valueOf(page));
+            }
+            tag.put("Pages", pages);
+
+            if (data.kofiUrl() != null) tag.putString("KofiUrl", data.kofiUrl());
+            if (data.patreonUrl() != null) tag.putString("PatreonUrl", data.patreonUrl());
+
+            if (data.ownerUuid() != null) tag.putIntArray("OwnerUuid", net.minecraft.core.UUIDUtil.uuidToIntArray(data.ownerUuid()));
+            if (data.ownerUsername() != null) tag.putString("OwnerUsername", data.ownerUsername());
+
+            if (data.placedAt() != null) tag.putString("PlacedAt", data.placedAt().toString());
+            if (data.lastEditedAt() != null) tag.putString("LastEditedAt", data.lastEditedAt().toString());
+            tag.putInt("BgColorIndex", data.bgColorIndex());
         }
-        tag.put("Pages", pages);
-
-        if (data.kofiUrl() != null) tag.putString("KofiUrl", data.kofiUrl());
-        if (data.patreonUrl() != null) tag.putString("PatreonUrl", data.patreonUrl());
-
-        if (data.ownerUuid() != null) tag.putUUID("OwnerUuid", data.ownerUuid());
-        if (data.ownerUsername() != null) tag.putString("OwnerUsername", data.ownerUsername());
-
-        if (data.placedAt() != null) tag.putString("PlacedAt", data.placedAt().toString());
-        if (data.lastEditedAt() != null) tag.putString("LastEditedAt", data.lastEditedAt().toString());
-        tag.putInt("BgColorIndex", data.bgColorIndex());
     }
 
     @Override
     public void loadBlockEntityData(Object blockEntity, Object tagOrInput) {
-        // TODO: In 1.21.6+, tagOrInput will be a ValueInput, not CompoundTag.
-        // This implementation assumes CompoundTag and must be adapted for ValueInput.
-        if (!(blockEntity instanceof TipSignBlockEntity be) || !(tagOrInput instanceof CompoundTag tag)) return;
-        if (!tag.contains("Id")) return;
+        if (!(blockEntity instanceof TipSignBlockEntity be)) return;
 
-        String id = tag.getString("Id");
-        String title = tag.getString("Title");
+        if (tagOrInput instanceof ValueInput view) {
+            if (view.getString("Id").isEmpty()) return;
 
-        List<String> pages = new ArrayList<>();
-        if (tag.contains("Pages", Tag.TAG_LIST)) {
-            ListTag pageList = tag.getList("Pages", Tag.TAG_STRING);
-            for (int i = 0; i < pageList.size(); i++) {
-                pages.add(pageList.getString(i));
+            String id = view.getString("Id").orElse("");
+            String title = view.getString("Title").orElse(TipSignData.DEFAULT_TITLE);
+
+            List<String> pages = new ArrayList<>();
+            int pageCount = view.getInt("PageCount").orElse(0);
+            for (int i = 0; i < pageCount; i++) {
+                view.getString("Page" + i).ifPresent(pages::add);
             }
+            if (pages.isEmpty()) pages.add("");
+
+            String kofiUrl = view.getString("KofiUrl").orElse(null);
+            String patreonUrl = view.getString("PatreonUrl").orElse(null);
+
+            UUID ownerUuid = view.read("OwnerUuid", net.minecraft.core.UUIDUtil.CODEC).orElse(new UUID(0, 0));
+            String ownerUsername = view.getString("OwnerUsername").orElse("");
+
+            Instant placedAt = view.getString("PlacedAt").map(VersionAdapterImpl::parseInstantStr).orElse(null);
+            Instant lastEditedAt = view.getString("LastEditedAt").map(VersionAdapterImpl::parseInstantStr).orElse(null);
+            int bgColorIndex = view.getInt("BgColorIndex").orElse(0);
+
+            be.setData(new TipSignData(id, title, pages, kofiUrl, patreonUrl, ownerUuid, ownerUsername, placedAt, lastEditedAt, bgColorIndex));
+        } else if (tagOrInput instanceof CompoundTag tag) {
+            // Fallback for CompoundTag
+            if (tag.getString("Id").isEmpty()) return;
+
+            String id = tag.getStringOr("Id", "");
+            String title = tag.getStringOr("Title", TipSignData.DEFAULT_TITLE);
+
+            List<String> pages = new ArrayList<>();
+            tag.getList("Pages").ifPresent(pageList -> {
+                for (int i = 0; i < pageList.size(); i++) {
+                    if (pageList.get(i) instanceof StringTag st) {
+                        pages.add(st.value());
+                    }
+                }
+            });
+            if (pages.isEmpty()) pages.add("");
+
+            String kofiUrl = tag.getStringOr("KofiUrl", null);
+            String patreonUrl = tag.getStringOr("PatreonUrl", null);
+
+            UUID ownerUuid = tag.getIntArray("OwnerUuid")
+                .filter(arr -> arr.length == 4)
+                .map(net.minecraft.core.UUIDUtil::uuidFromIntArray)
+                .orElse(new UUID(0, 0));
+            String ownerUsername = tag.getStringOr("OwnerUsername", "");
+
+            Instant placedAt = tag.getString("PlacedAt").map(VersionAdapterImpl::parseInstantStr).orElse(null);
+            Instant lastEditedAt = tag.getString("LastEditedAt").map(VersionAdapterImpl::parseInstantStr).orElse(null);
+            int bgColorIndex = tag.getIntOr("BgColorIndex", 0);
+
+            be.setData(new TipSignData(id, title, pages, kofiUrl, patreonUrl, ownerUuid, ownerUsername, placedAt, lastEditedAt, bgColorIndex));
         }
-        if (pages.isEmpty()) pages.add("");
-
-        String kofiUrl = tag.contains("KofiUrl") ? tag.getString("KofiUrl") : null;
-        String patreonUrl = tag.contains("PatreonUrl") ? tag.getString("PatreonUrl") : null;
-
-        UUID ownerUuid = tag.hasUUID("OwnerUuid") ? tag.getUUID("OwnerUuid") : new UUID(0, 0);
-        String ownerUsername = tag.contains("OwnerUsername") ? tag.getString("OwnerUsername") : "";
-
-        Instant placedAt = parseInstant(tag, "PlacedAt");
-        Instant lastEditedAt = parseInstant(tag, "LastEditedAt");
-        int bgColorIndex = tag.contains("BgColorIndex") ? tag.getInt("BgColorIndex") : 0;
-
-        be.setData(new TipSignData(id, title, pages, kofiUrl, patreonUrl, ownerUuid, ownerUsername, placedAt, lastEditedAt, bgColorIndex));
     }
 
     @Override
@@ -130,7 +178,7 @@ public class VersionAdapterImpl implements VersionAdapter {
             ServerPlayer player = context.player();
             BlockPos pos = payload.pos();
 
-            context.player().server.execute(() -> {
+            context.player().getServer().execute(() -> {
                 BlockEntity be = player.level().getBlockEntity(pos);
                 if (!(be instanceof TipSignBlockEntity tipSign)) return;
 
@@ -198,12 +246,15 @@ public class VersionAdapterImpl implements VersionAdapter {
         return ResourceLocation.fromNamespaceAndPath(namespace, path);
     }
 
-    private static Instant parseInstant(CompoundTag tag, String key) {
-        if (!tag.contains(key)) return null;
+    private static Instant parseInstantStr(String s) {
         try {
-            return Instant.parse(tag.getString(key));
+            return Instant.parse(s);
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private static Instant parseInstant(CompoundTag tag, String key) {
+        return tag.getString(key).map(VersionAdapterImpl::parseInstantStr).orElse(null);
     }
 }
